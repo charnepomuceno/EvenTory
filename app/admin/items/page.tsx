@@ -46,7 +46,7 @@ export default function ManageMenuItems() {
               <Link href="/admin/items" className="text-gray-700 hover:text-blue-800 font-medium border-2 border-blue-800 bg-white/80 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition backdrop-blur-sm">
                 Items
               </Link>
-              <Link href="#" className="text-gray-700 hover:text-blue-600 font-medium">
+              <Link href="/admin/packages" className="text-gray-700 hover:text-blue-600 font-medium">
                 Packages
               </Link>
               <Link href="#" className="text-gray-700 hover:text-blue-600 font-medium">
