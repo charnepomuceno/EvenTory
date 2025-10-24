@@ -110,10 +110,10 @@ export default function ManageBookings() {
       <Link href="/admin/packages" className="text-gray-700 hover:text-blue-600 font-medium">
         Packages
       </Link>
-      <Link href="#" className="text-gray-700 hover:text-blue-600 font-medium">
+      <Link href="/admin/payments" className="text-gray-700 hover:text-blue-600 font-medium">
         Payments
       </Link>
-      <Link href="#" className="text-gray-700 hover:text-blue-600 font-medium">
+      <Link href="/admin/feedback" className="text-gray-700 hover:text-blue-600 font-medium">
         Feedback
       </Link>
     </div>

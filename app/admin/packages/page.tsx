@@ -89,10 +89,10 @@ export default function PackagesPage() {
               >
                 Packages
               </Link>
-              <Link href="#" className="text-slate-700 hover:text-blue-800 font-medium">
+              <Link href="/admin/payments" className="text-slate-700 hover:text-blue-800 font-medium">
                 Payments
               </Link>
-              <Link href="#" className="text-slate-700 hover:text-blue-800 font-medium">
+              <Link href="/admin/feedback" className="text-slate-700 hover:text-blue-800 font-medium">
                 Feedback
               </Link>
             </div>
