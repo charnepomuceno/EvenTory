@@ -1,4 +1,5 @@
 import { Calendar, Users, Star, TrendingUp, Package, LogOut } from "lucide-react"
+
 import Link from "next/link"
 import Image from "next/image"
 
@@ -13,7 +14,7 @@ export default function AdminDashboard() {
     >
       <div className="min-h-screen bg-black/10">
         {/* Navigation Header */}
-        <nav className="bg-white/80 backdrop-blur-sm border-b border-amber-200">
+        <nav className="bg-transparent">
   <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
     {/* Left: Logo */}
     <div className="flex-shrink-0">
@@ -28,7 +29,7 @@ export default function AdminDashboard() {
 
     {/* Center: Navigation Links */}
     <div className="flex items-center gap-8 mx-auto">
-      <Link href="#" className="text-gray-700 hover:text-blue-600 font-medium">
+      <Link href="/admin/booking" className="text-gray-700 hover:text-blue-600 font-medium">
         Bookings
       </Link>
       <Link href="#" className="text-gray-700 hover:text-blue-600 font-medium">
@@ -60,7 +61,9 @@ export default function AdminDashboard() {
         <main className="max-w-7xl mx-auto px-6 py-12">
           {/* Header Section */}
           <div className="mb-12">
-            <h1 className="text-4xl font-bold text-red-900 mb-2">Admin Dashboard</h1>
+            <h1 className="text-4xl font-bold text-red-900 mb-2" style={{ fontFamily: "MochiyPopOne" }}>
+              Admin Dashboard
+            </h1>
             <p className="text-gray-600">Welcome back! Here's what's happening with your catering business.</p>
           </div>
 
@@ -70,9 +73,9 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-red-600 font-semibold text-sm">Total Bookings</p>
+                  <p className="text-red-900 font-semibold text-sm">Total Bookings</p>
                 </div>
-                <Calendar className="text-red-600" size={24} />
+                <Calendar className="text-red-700" size={24} />
               </div>
               <h3 className="text-4xl font-bold text-red-900 mb-2">156</h3>
               <p className="text-gray-500 text-sm">+12% from last month</p>
@@ -82,9 +85,9 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-blue-600 font-semibold text-sm">Pending Approvals</p>
+                  <p className="text-red-900 font-semibold text-sm">Pending Approvals</p>
                 </div>
-                <Package className="text-blue-600" size={24} />
+                <Package className="text-blue-800" size={24} />
               </div>
               <h3 className="text-4xl font-bold text-red-900 mb-2">8</h3>
               <p className="text-gray-500 text-sm">Requires attention</p>
@@ -94,7 +97,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-red-600 font-semibold text-sm">Upcoming Events</p>
+                  <p className="text-red-900 font-semibold text-sm">Upcoming Events</p>
                 </div>
                 <Users className="text-gray-600" size={24} />
               </div>
@@ -106,9 +109,9 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-red-600 font-semibold text-sm">Revenue This Month</p>
+                  <p className="text-red-900 font-semibold text-sm">Revenue This Month</p>
                 </div>
-                <span className="text-red-600 text-2xl font-bold">₱</span>
+                <span className="text-red-700 text-2xl font-bold">₱</span>
               </div>
               <h3 className="text-4xl font-bold text-red-900 mb-2">485,000</h3>
               <p className="text-gray-500 text-sm">+18% from last month</p>
@@ -118,9 +121,9 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-blue-600 font-semibold text-sm">Average Rating</p>
+                  <p className="text-red-900 font-semibold text-sm">Average Rating</p>
                 </div>
-                <Star className="text-blue-600" size={24} />
+                <Star className="text-blue-800" size={24} />
               </div>
               <h3 className="text-4xl font-bold text-red-900 mb-2">4.8</h3>
               <p className="text-gray-500 text-sm">Based on 89 reviews</p>
@@ -130,7 +133,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-red-600 font-semibold text-sm">Customer Satisfaction</p>
+                  <p className="text-red-900 font-semibold text-sm">Customer Satisfaction</p>
                 </div>
                 <TrendingUp className="text-gray-600" size={24} />
               </div>
