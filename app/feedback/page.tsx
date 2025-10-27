@@ -4,13 +4,24 @@ import type React from "react"
 
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 
 export default function FeedbackPage() {
+  const pathname = usePathname()
   const [rating, setRating] = useState(0)
   const [comments, setComments] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -25,12 +36,18 @@ export default function FeedbackPage() {
     setTimeout(() => setSubmitted(false), 3000)
   }
 
+  const isActive = (href: string) => pathname === href
+
   return (
     <main className="min-h-screen bg-background">
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b border-border/20">
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
+        }`}
+      >
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
           <div className="flex items-center justify-between h-16 md:h-20">
-            <Link href="/">
+            <Link href="/" className="shrink-0 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <Image
                 src="/images/eventory.png"
                 alt="EvenTory"
@@ -42,28 +59,52 @@ export default function FeedbackPage() {
             </Link>
 
             <nav className="hidden md:flex items-center gap-15">
-              <Link href="/menu" className="text-foreground hover:text-accent transition-colors text-base font-medium">
+              <Link
+                href="/menu"
+                className={`transition-colors text-base font-medium opacity-0 animate-fade-in ${
+                  isActive("/menu") ? "text-accent font-semibold" : "text-foreground hover:text-accent"
+                }`}
+                style={{ animationDelay: "0.3s" }}
+              >
                 Menu
               </Link>
               <Link
                 href="/packages"
-                className="text-foreground hover:text-accent transition-colors text-base font-medium"
+                className={`transition-colors text-base font-medium opacity-0 animate-fade-in ${
+                  isActive("/packages") ? "text-accent font-semibold" : "text-foreground hover:text-accent"
+                }`}
+                style={{ animationDelay: "0.4s" }}
               >
                 Packages
               </Link>
-              <Link href="/book" className="text-foreground hover:text-accent transition-colors text-base font-medium">
+              <Link
+                href="/book"
+                className={`transition-colors text-base font-medium opacity-0 animate-fade-in ${
+                  isActive("/book") ? "text-accent font-semibold" : "text-foreground hover:text-accent"
+                }`}
+                style={{ animationDelay: "0.5s" }}
+              >
                 Book Now
               </Link>
               <Link
                 href="/feedback"
-                className="text-foreground hover:text-accent transition-colors text-base font-medium"
+                className={`transition-colors text-base font-medium opacity-0 animate-fade-in ${
+                  isActive("/feedback") ? "text-accent font-semibold" : "text-foreground hover:text-accent"
+                }`}
+                style={{ animationDelay: "0.6s" }}
               >
                 Feedback
               </Link>
             </nav>
 
-            <Link href="/profile">
-              <button className="px-4 py-2 text-foreground border border-foreground rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-base font-medium">
+            <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+              <button
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+                  isActive("/profile")
+                    ? "bg-accent text-primary-foreground border border-accent"
+                    : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
+                }`}
+              >
                 Profile
               </button>
             </Link>
@@ -77,8 +118,16 @@ export default function FeedbackPage() {
         </div>
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[300px] md:min-h-[350px]">
           <div className="text-center space-y-4 md:space-y-6">
-            <h1 className="text-4xl md:text-5xl font-mochiy text-primary">Share Your Feedback</h1>
-            <p className="text-lg md:text-xl text-foreground font-archivo">
+            <h1
+              className="text-4xl md:text-5xl font-mochiy text-primary opacity-0 animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
+              Share Your Feedback
+            </h1>
+            <p
+              className="text-lg md:text-xl text-foreground font-archivo opacity-0 animate-fade-in"
+              style={{ animationDelay: "0.4s" }}
+            >
               Help us improve by sharing your experience with our catering service
             </p>
           </div>
@@ -87,7 +136,10 @@ export default function FeedbackPage() {
 
       <section className="pt-2 pb-20 md:pt-4 md:pb-28 bg-background">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-16 md:mb-24">
+          <div
+            className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-16 md:mb-24 opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.5s" }}
+          >
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-mochiy text-primary mb-2">Rate Your Experience</h2>
               <p className="text-foreground/70 text-base font-archivo">Your feedback helps us serve you better</p>
@@ -155,14 +207,14 @@ export default function FeedbackPage() {
           </div>
 
           <div>
-            <div className="text-center mb-12 md:mb-16">
+            <div className="text-center mb-12 md:mb-16 opacity-0 animate-fade-in" style={{ animationDelay: "0.6s" }}>
               <h2 className="text-3xl md:text-4xl font-mochiy text-primary mb-3">Recent Reviews</h2>
               <p className="text-foreground/70 text-base md:text-lg font-archivo">
                 Read feedback from satisfied customers
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <div className="bg-card rounded-lg p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow border border-border/50">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                   <div>
