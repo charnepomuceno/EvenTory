@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation"
 export default function FeedbackPage() {
   const pathname = usePathname()
   const [rating, setRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
   const [comments, setComments] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
@@ -27,6 +28,10 @@ export default function FeedbackPage() {
     e.preventDefault()
     if (rating === 0) {
       setError("Please select a rating")
+      return
+    }
+    if (!comments.trim()) {
+      setError("Please add feedback text")
       return
     }
     setSubmitted(true)
@@ -155,15 +160,15 @@ export default function FeedbackPage() {
                     <button
                       key={star}
                       type="button"
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
                       onClick={() => setRating(star)}
                       className="transition-transform duration-200 hover:scale-110"
                     >
                       <span
-                        className={
-                          star <= rating
-                            ? "text-5xl md:text-6xl text-accent"
-                            : "text-5xl md:text-6xl text-foreground/30"
-                        }
+                        className={`text-5xl md:text-6xl transition-all duration-200 ${
+                          star <= (hoverRating || rating) ? "text-accent animate-glow-star" : "text-foreground/30"
+                        }`}
                       >
                         ★
                       </span>
@@ -173,7 +178,9 @@ export default function FeedbackPage() {
               </div>
 
               <div>
-                <label className="block text-foreground font-mochiy mb-3">Your Comments</label>
+                <label className="block text-foreground font-mochiy mb-3">
+                  Your Comments <span className="text-destructive">*</span>
+                </label>
                 <textarea
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}

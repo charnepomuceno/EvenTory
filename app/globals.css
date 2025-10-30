@@ -6,7 +6,7 @@
 :root {
   --background: #fff8f0;
   --foreground: #003d5c;
-  --card: #ffffff;
+  --card: #ffffff6c;
   --card-foreground: #003d5c;
   --popover: #ffffff;
   --popover-foreground: #003d5c;
@@ -139,8 +139,22 @@ body::-webkit-scrollbar {
   }
 }
 
+@keyframes glow-star {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0px rgba(91, 157, 190, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(91, 157, 190, 0.8));
+  }
+}
+
 .animate-fade-in {
   animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-glow-star {
+  animation: glow-star 0.6s ease-in-out;
 }
 
 .font-mochiy {
