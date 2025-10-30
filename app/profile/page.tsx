@@ -310,6 +310,7 @@ export default function ProfilePage() {
               <div>
                 <label className="block text-foreground/70 text-sm font-archivo mb-2">Full Name</label>
                 <input
+                  aria-label="name"
                   type="text"
                   value={editFormData.fullName}
                   onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
@@ -319,6 +320,7 @@ export default function ProfilePage() {
               <div>
                 <label className="block text-foreground/70 text-sm font-archivo mb-2">Email</label>
                 <input
+                  aria-label="email"
                   type="email"
                   value={editFormData.email}
                   onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
@@ -328,6 +330,7 @@ export default function ProfilePage() {
               <div>
                 <label className="block text-foreground/70 text-sm font-archivo mb-2">Phone</label>
                 <input
+                  aria-label="phone"
                   type="tel"
                   value={editFormData.phone}
                   onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}

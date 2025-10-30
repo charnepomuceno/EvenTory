@@ -63,7 +63,23 @@ export default function BookPage() {
     }))
   }
 
-  const getDateStatus = (day: number): "available" | "booked" | "pending" => {
+  const formatDateDisplay = (year: number, month: number, day: number): string => {
+    const date = new Date(year, month, day)
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+  }
+
+  const isDateInPastOrToday = (year: number, month: number, day: number): boolean => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const checkDate = new Date(year, month, day)
+    checkDate.setHours(0, 0, 0, 0)
+    return checkDate <= today
+  }
+
+  const getDateStatus = (day: number): "available" | "booked" | "pending" | "past" => {
+    if (isDateInPastOrToday(currentDate.getFullYear(), currentDate.getMonth(), day)) {
+      return "past"
+    }
     if (dateStatuses.booked.includes(day)) return "booked"
     if (dateStatuses.pending.includes(day)) return "pending"
     return "available"
@@ -71,6 +87,7 @@ export default function BookPage() {
 
   const getDateColor = (day: number) => {
     const status = getDateStatus(day)
+    if (status === "past") return "bg-gray-100 text-gray-400 cursor-not-allowed"
     if (status === "booked") return "bg-red-100 text-red-700 cursor-not-allowed"
     if (status === "pending") return "bg-yellow-100 text-yellow-700 cursor-not-allowed"
     return "bg-green-50 text-green-700 hover:bg-green-200 cursor-pointer"
@@ -79,11 +96,10 @@ export default function BookPage() {
   const handleDateClick = (day: number) => {
     const status = getDateStatus(day)
     if (status === "available") {
-      const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-      const formattedDate = selectedDate.toISOString().split("T")[0]
+      const formattedDisplay = formatDateDisplay(currentDate.getFullYear(), currentDate.getMonth(), day)
       setFormData((prev) => ({
         ...prev,
-        eventDate: formattedDate,
+        eventDate: formattedDisplay,
       }))
       setShowCalendar(false)
     }
@@ -343,7 +359,9 @@ export default function BookPage() {
                       <label className="block text-foreground font-archivo text-sm mb-2">
                         Event Type <span className="text-destructive">*</span>
                       </label>
-                      <select name="eventType"
+                      <select
+                        aria-label="Event Type"
+                        name="eventType"
                         value={formData.eventType}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
@@ -372,7 +390,6 @@ export default function BookPage() {
                     </div>
                   </div>
 
-                  {/* Event Date - Replaced with calendar picker */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Event Date <span className="text-destructive">*</span>
@@ -480,6 +497,7 @@ export default function BookPage() {
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">Preferred Package</label>
                     <select
+                      aria-label="Package"
                       name="preferredPackage"
                       value={formData.preferredPackage}
                       onChange={handleInputChange}
