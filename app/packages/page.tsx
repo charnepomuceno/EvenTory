@@ -387,12 +387,14 @@ export default function PackagesPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleBookNow(pkg)}
+                      title="Book this package now"
                       className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy text-sm hover:bg-accent/90 transition-colors duration-200"
                     >
                       Book Now
                     </button>
                     <button
                       onClick={() => handleCustomize(pkg)}
+                      title="Customize this package"
                       className="flex-1 px-4 py-3 border border-accent text-accent rounded-lg font-mochiy text-sm hover:bg-accent/10 transition-colors duration-200"
                     >
                       Customize
@@ -412,6 +414,7 @@ export default function PackagesPage() {
               <h2 className="text-2xl font-mochiy text-primary">{selectedPackage.name}</h2>
               <button
                 onClick={() => setShowDetailsModal(false)}
+                title="Close package details modal"
                 className="p-2 hover:bg-secondary rounded-lg transition-colors"
               >
                 <X className="w-6 h-6 text-foreground" />
@@ -472,6 +475,7 @@ export default function PackagesPage() {
               <h2 className="text-2xl font-mochiy text-primary">Customize {selectedPackage.name}</h2>
               <button
                 onClick={() => setShowCustomizeModal(false)}
+                title="Close customize package modal"
                 className="p-2 hover:bg-secondary rounded-lg transition-colors"
               >
                 <X className="w-6 h-6 text-foreground" />
