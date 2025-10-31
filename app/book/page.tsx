@@ -25,6 +25,8 @@ export default function BookPage() {
     pending: [13, 30],
   }
 
+  const [selectedPackageInfo, setSelectedPackageInfo] = useState<any>(null)
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -42,6 +44,28 @@ export default function BookPage() {
       setIsScrolled(window.scrollY > 50)
     }
     window.addEventListener("scroll", handleScroll)
+
+    const savedProfile = localStorage.getItem("userProfile")
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile)
+      setFormData((prev) => ({
+        ...prev,
+        fullName: profile.fullName || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+      }))
+    }
+
+    const packageData = sessionStorage.getItem("selectedPackage")
+    if (packageData) {
+      const parsed = JSON.parse(packageData)
+      setSelectedPackageInfo(parsed)
+      setFormData((prev) => ({
+        ...prev,
+        preferredPackage: parsed.name,
+      }))
+    }
+
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
@@ -51,7 +75,7 @@ export default function BookPage() {
   }
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^[\d\s\-+$$$$]+$/
+    const phoneRegex = /^[\d\s\-+()]+$/
     return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 10
   }
 
@@ -158,6 +182,10 @@ export default function BookPage() {
     }
     if (!formData.eventLocation.trim()) {
       setError("Event Location is required")
+      return
+    }
+    if (!formData.preferredPackage.trim()) {
+      setError("Preferred Package is required. Please select a package from the Packages page first.")
       return
     }
 
@@ -295,6 +323,30 @@ export default function BookPage() {
               </p>
             </div>
 
+            {selectedPackageInfo && (
+              <div className="mb-8 p-4 bg-secondary/50 rounded-lg border border-border">
+                <h3 className="font-mochiy text-primary text-lg mb-3">Selected Package</h3>
+                <div className="space-y-3 text-sm font-archivo">
+                  <p>
+                    <span className="font-semibold">Package:</span> {selectedPackageInfo.name}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Price:</span> ₱{selectedPackageInfo.price?.toLocaleString()}
+                  </p>
+                  {selectedPackageInfo.customItems && (
+                    <div>
+                      <p className="font-semibold mb-2">Included Items:</p>
+                      <ul className="list-disc list-inside space-y-1 text-foreground/80">
+                        {selectedPackageInfo.customItems.map((item: string, i: number) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Contact Information Section */}
               <div>
@@ -405,28 +457,28 @@ export default function BookPage() {
                       </button>
 
                       {showCalendar && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-xl p-4 z-50">
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-xl p-3 z-50 w-full md:w-80">
                           {/* Month Navigation */}
-                          <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center justify-between mb-3">
                             <button
                               type="button"
                               onClick={handlePrevMonth}
-                              className="px-3 py-2 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-sm"
+                              className="px-2 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-xs"
                             >
                               ← Prev
                             </button>
-                            <h4 className="text-base font-mochiy text-primary">{monthName}</h4>
+                            <h4 className="text-sm font-mochiy text-primary">{monthName}</h4>
                             <button
                               type="button"
                               onClick={handleNextMonth}
-                              className="px-3 py-2 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-sm"
+                              className="px-2 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-xs"
                             >
                               Next →
                             </button>
                           </div>
 
                           {/* Weekdays */}
-                          <div className="grid grid-cols-7 text-center mb-2 font-semibold text-foreground/60 font-archivo text-xs">
+                          <div className="grid grid-cols-7 text-center mb-1.5 font-semibold text-foreground/60 font-archivo text-xs">
                             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                               <div key={day} className="py-1">
                                 {day}
@@ -435,9 +487,9 @@ export default function BookPage() {
                           </div>
 
                           {/* Calendar Days */}
-                          <div className="grid grid-cols-7 gap-1 text-xs mb-3">
+                          <div className="grid grid-cols-7 gap-0.5 text-xs mb-2">
                             {emptyDays.map((_, i) => (
-                              <div key={`empty-${i}`} className="h-8"></div>
+                              <div key={`empty-${i}`} className="h-7"></div>
                             ))}
                             {days.map((day) => (
                               <button
@@ -445,7 +497,7 @@ export default function BookPage() {
                                 type="button"
                                 onClick={() => handleDateClick(day)}
                                 disabled={getDateStatus(day) !== "available"}
-                                className={`h-8 rounded-lg font-archivo font-medium transition-all duration-200 flex items-center justify-center ${getDateColor(day)}`}
+                                className={`h-7 rounded font-archivo font-medium transition-all duration-200 flex items-center justify-center text-xs ${getDateColor(day)}`}
                               >
                                 {day}
                               </button>
@@ -453,15 +505,18 @@ export default function BookPage() {
                           </div>
 
                           {/* Legend */}
-                          <div className="flex justify-center gap-3 text-xs text-foreground/70 font-archivo mb-3">
+                          <div className="flex justify-center gap-2 text-xs text-foreground/70 font-archivo mb-2">
                             <div className="flex items-center gap-1">
-                              <div className="w-3 h-3 bg-green-100 rounded"></div> Available
+                              <div className="w-2.5 h-2.5 bg-green-100 rounded"></div>{" "}
+                              <span className="hidden sm:inline">Avail</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <div className="w-3 h-3 bg-yellow-100 rounded"></div> Pending
+                              <div className="w-2.5 h-2.5 bg-yellow-100 rounded"></div>{" "}
+                              <span className="hidden sm:inline">Pend</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <div className="w-3 h-3 bg-red-100 rounded"></div> Booked
+                              <div className="w-2.5 h-2.5 bg-red-100 rounded"></div>{" "}
+                              <span className="hidden sm:inline">Book</span>
                             </div>
                           </div>
 
@@ -469,7 +524,7 @@ export default function BookPage() {
                           <button
                             type="button"
                             onClick={() => setShowCalendar(false)}
-                            className="w-full px-3 py-2 bg-secondary/60 hover:bg-secondary text-foreground rounded-lg font-archivo text-sm transition-all"
+                            className="w-full px-2 py-1.5 bg-secondary/60 hover:bg-secondary text-foreground rounded-lg font-archivo text-xs transition-all"
                           >
                             Close
                           </button>
@@ -495,20 +550,17 @@ export default function BookPage() {
 
                   {/* Preferred Package */}
                   <div>
-                    <label className="block text-foreground font-archivo text-sm mb-2">Preferred Package</label>
-                    <select
-                      aria-label="Package"
+                    <label className="block text-foreground font-archivo text-sm mb-2">
+                      Preferred Package <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="text"
                       name="preferredPackage"
                       value={formData.preferredPackage}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
-                    >
-                      <option value="">Select a package (optional)</option>
-                      <option value="basic">Basic Package</option>
-                      <option value="standard">Standard Package</option>
-                      <option value="premium">Premium Package</option>
-                      <option value="deluxe">Deluxe Package</option>
-                    </select>
+                      readOnly
+                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none"
+                      placeholder="Please select a package from the Packages page"
+                    />
                   </div>
 
                   {/* Special Requests */}
