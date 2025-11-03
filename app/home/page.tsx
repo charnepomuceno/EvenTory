@@ -38,28 +38,28 @@ function Header() {
 
           <nav className="hidden md:flex items-center gap-15">
             <Link
-              href="/login"
+              href="/menu"
               className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
               style={{ animationDelay: "0.3s" }}
             >
               Menu
             </Link>
             <Link
-              href="/login"
+              href="/packages"
               className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
               style={{ animationDelay: "0.4s" }}
             >
               Packages
             </Link>
             <Link
-              href="/login"
+              href="/book"
               className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
               style={{ animationDelay: "0.5s" }}
             >
               Book Now
             </Link>
             <Link
-              href="/login"
+              href="/feedback"
               className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
               style={{ animationDelay: "0.6s" }}
             >
@@ -68,9 +68,9 @@ function Header() {
           </nav>
 
           <div className="hidden md:block opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
-            <Link href="/login">
+            <Link href="/profile">
               <button className="px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-base font-medium">
-                Login
+                Profile
               </button>
             </Link>
           </div>
@@ -88,16 +88,16 @@ function Header() {
 
         {isOpen && (
           <nav className="md:hidden pb-4 space-y-2">
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+            <Link href="/menu" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
               Menu
             </Link>
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+            <Link href="/packages" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
               Packages
             </Link>
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+            <Link href="/book" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
               Book Now
             </Link>
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+            <Link href="/feedback" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
               Feedback
             </Link>
             <Link href="/login" className="block">
@@ -146,7 +146,7 @@ function Hero() {
             Make Your Event Unforgettable.
           </p>
 
-          <Link href="/login">
+          <Link href="#availability">
             <button
               className={`px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 transition-all duration-1000 delay-500 ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -233,6 +233,158 @@ function FeaturedPackages() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CheckAvailability() {
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 9)) // October 2025
+  const [selectedDate, setSelectedDate] = useState<number | null>(null)
+  const [showPopup, setShowPopup] = useState(false)
+  const [popupStatus, setPopupStatus] = useState<"available" | "booked" | "pending" | null>(null)
+
+  const dateStatuses = {
+    available: [1, 3, 4, 5, 6, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 27, 28, 29, 31],
+    booked: [2, 7, 10, 21, 22],
+    pending: [13, 30],
+  }
+
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => null)
+
+  const getDateStatus = (day: number): "available" | "booked" | "pending" => {
+    if (dateStatuses.booked.includes(day)) return "booked"
+    if (dateStatuses.pending.includes(day)) return "pending"
+    return "available"
+  }
+
+  const getDateColor = (day: number) => {
+    const status = getDateStatus(day)
+    if (status === "booked") return "bg-red-100 text-red-700 cursor-not-allowed"
+    if (status === "pending") return "bg-yellow-100 text-yellow-700 cursor-not-allowed"
+    return "bg-green-50 text-green-700 hover:bg-green-200 cursor-pointer"
+  }
+
+  const handleDateClick = (day: number) => {
+    const status = getDateStatus(day)
+    if (status === "available") {
+      setSelectedDate(day)
+      setPopupStatus(status)
+      setShowPopup(true)
+    }
+  }
+
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
+    setShowPopup(false)
+  }
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
+    setShowPopup(false)
+  }
+
+  const monthName = currentDate.toLocaleString("default", { month: "long", year: "numeric" })
+  const selectedDateFormatted =
+    selectedDate !== null
+      ? new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate).toLocaleDateString("default", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+      : ""
+
+  return (
+    <section id="availability" className="py-16 md:py-24 bg-background">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+          <h2 className="text-3xl md:text-4xl font-mochiy text-primary mb-3">Check Availability</h2>
+          <p className="text-foreground/70 text-base md:text-lg font-archivo">
+            Select your desired date from our booking calendar
+          </p>
+        </div>
+
+        {/* Calendar Container */}
+        <div
+          className="bg-card rounded-2xl shadow-xl p-6 md:p-10 max-w-3xl mx-auto animate-fade-in"
+          style={{ animationDelay: "0.4s" }}>
+          {/* Month Navigation */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={handlePrevMonth}
+              className="px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all"
+            >
+              ← Prev
+            </button>
+            <h4 className="text-lg md:text-xl font-mochiy text-primary">{monthName}</h4>
+            <button
+              onClick={handleNextMonth}
+              className="px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all"
+            >
+              Next →
+            </button>
+          </div>
+
+          {/* Weekdays */}
+          <div className="grid grid-cols-7 text-center mb-2 font-semibold text-foreground/60 font-archivo">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <div key={day} className="py-2 text-xs md:text-sm">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7 gap-1.5 md:gap-2 text-sm mb-6">
+            {emptyDays.map((_, i) => (
+              <div key={`empty-${i}`} className="h-9 md:h-11"></div>
+            ))}
+            {days.map((day) => (
+              <button
+                key={day}
+                onClick={() => handleDateClick(day)}
+                disabled={getDateStatus(day) !== "available"}
+                className={`h-9 md:h-11 rounded-lg font-archivo font-medium transition-all duration-200 flex items-center justify-center ${getDateColor(day)} ${
+                  selectedDate === day ? "ring-2 ring-primary/70 scale-105" : ""
+                }`}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+
+          {/* Legend */}
+          <div className="flex justify-center gap-4 text-xs md:text-sm text-foreground/70 font-archivo mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-green-100 rounded"></div> Available
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-yellow-100 rounded"></div> Pending
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-100 rounded"></div> Booked
+            </div>
+          </div>
+
+          {/* Popup */}
+          {showPopup && selectedDate !== null && (
+            <div className="mt-6 p-5 bg-secondary/50 border border-border rounded-xl text-center animate-fade-in">
+              <p className="font-archivo text-foreground mb-2">
+                <span className="font-mochiy text-primary">{selectedDateFormatted}</span>
+              </p>
+              <p className="text-green-700 mb-4">✓ This date is available for booking</p>
+              <Link href="/book">
+                <button className="px-5 py-2.5 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-all font-medium text-sm">
+                  Book this Date
+                </button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -378,12 +530,12 @@ function CTA() {
           className="flex flex-col md:flex-row gap-4 justify-center opacity-0 animate-fade-in"
           style={{ animationDelay: "0.5s" }}
         >
-          <Link href="/login">
+          <Link href="/menu">
             <button className="px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 hover:shadow-lg transition-all font-archivo">
               Browse Menu
             </button>
           </Link>
-          <Link href="/login">
+          <Link href="/book">
             <button className="px-8 py-3 bg-transparent text-accent border border-accent rounded-full font-medium hover:bg-accent hover:text-primary-foreground transition-all font-archivo">
               Book Now
             </button>
@@ -420,22 +572,22 @@ function Footer() {
             <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                <Link href="/menu" className="hover:text-primary-foreground/70 transition">
                   Menu
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                <Link href="/packages" className="hover:text-primary-foreground/70 transition">
                   Packages
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                <Link href="/book" className="hover:text-primary-foreground/70 transition">
                   Book Now
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                <Link href="/feedback" className="hover:text-primary-foreground/70 transition">
                   Feedback
                 </Link>
               </li>
@@ -471,6 +623,7 @@ export default function Home() {
       <Header />
       <Hero />
       <FeaturedPackages />
+      <CheckAvailability />
       <HowItWorks />
       <Testimonials />
       <CTA />
