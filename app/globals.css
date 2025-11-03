@@ -74,6 +74,13 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+@font-face {
+  font-family: "MochiyPopOne";
+  src: url("/fonts/MochiyPopOne-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme inline {
   --font-sans: "Archivo", "Archivo Fallback";
   --font-mono: "Archivo", "Archivo Fallback";
