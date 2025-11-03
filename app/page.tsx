@@ -477,7 +477,7 @@ function Testimonials() {
   ]
 
   return (
-    <section className="py-16 md:py-24 bg-secondary/30">
+    <section className="py-16 md:py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-mochiy text-primary mb-3">What Our Clients Say</h2>
@@ -507,7 +507,45 @@ function Testimonials() {
       </div>
     </section>
   )
+  
 }
+
+function CTA() {
+  return (
+    <section className="py-20 md:py-28 bg-secondary/30 text-foreground">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2
+          className="text-3xl md:text-4xl font-mochiy mb-6 opacity-0 animate-fade-in text-primary"
+          style={{ animationDelay: "0.3s" }}
+        >
+          Ready to Book Your Event?
+        </h2>
+        <p
+          className="text-lg font-archivo mb-10 opacity-0 animate-fade-in max-w-2xl mx-auto text-foreground/80"
+          style={{ animationDelay: "0.4s" }}
+        >
+          Browse our delicious menu, choose your perfect package, and book your catering service today.
+        </p>
+        <div
+          className="flex flex-col md:flex-row gap-4 justify-center opacity-0 animate-fade-in"
+          style={{ animationDelay: "0.5s" }}
+        >
+          <Link href="/menu">
+            <button className="px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 hover:shadow-lg transition-all font-archivo">
+              Browse Menu
+            </button>
+          </Link>
+          <Link href="/book">
+            <button className="px-8 py-3 bg-transparent text-accent border border-accent rounded-full font-medium hover:bg-accent hover:text-primary-foreground transition-all font-archivo">
+              Book Now
+            </button>
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 
 function Footer() {
   return (
@@ -534,22 +572,22 @@ function Footer() {
             <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="#menu" className="hover:text-primary-foreground/70 transition">
+                <Link href="/menu" className="hover:text-primary-foreground/70 transition">
                   Menu
                 </Link>
               </li>
               <li>
-                <Link href="#packages" className="hover:text-primary-foreground/70 transition">
+                <Link href="/packages" className="hover:text-primary-foreground/70 transition">
                   Packages
                 </Link>
               </li>
               <li>
-                <Link href="#book" className="hover:text-primary-foreground/70 transition">
+                <Link href="/book" className="hover:text-primary-foreground/70 transition">
                   Book Now
                 </Link>
               </li>
               <li>
-                <Link href="#feedback" className="hover:text-primary-foreground/70 transition">
+                <Link href="/feedback" className="hover:text-primary-foreground/70 transition">
                   Feedback
                 </Link>
               </li>
@@ -588,6 +626,7 @@ export default function Home() {
       <CheckAvailability />
       <HowItWorks />
       <Testimonials />
+      <CTA />
       <Footer />
     </main>
   )
