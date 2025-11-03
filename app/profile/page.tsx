@@ -144,7 +144,7 @@ export default function ProfilePage() {
       >
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
           <div className="flex items-center justify-between h-16 md:h-20">
-            <Link href="/" className="shrink-0 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <Link href="/home" className="shrink-0 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <Image
                 src="/images/eventory.png"
                 alt="EvenTory"
