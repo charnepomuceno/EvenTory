@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Mochiy_Pop_One, Archivo } from "next/font/google"
 
@@ -8,6 +9,7 @@ const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -42,7 +44,10 @@ export default function RegisterPage() {
     if (!validateForm()) return
     setLoading(true)
     console.log("Register:", formData)
-    setTimeout(() => setLoading(false), 1000)
+    setTimeout(() => {
+      setLoading(false)
+      router.push("/home")
+    }, 2000) // 2-second delay
   }
 
   const isFormValid = () =>
@@ -94,7 +99,6 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Full Name */}
           <div>
             <label className="block text-[#003d5c] font-medium mb-2 text-sm">Full Name</label>
             <input
@@ -111,7 +115,6 @@ export default function RegisterPage() {
             {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-[#003d5c] font-medium mb-2 text-sm">Email</label>
             <input
@@ -128,7 +131,6 @@ export default function RegisterPage() {
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-[#003d5c] font-medium mb-2 text-sm">Password</label>
             <input
@@ -149,7 +151,6 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label className="block text-[#003d5c] font-medium mb-2 text-sm">Confirm Password</label>
             <input

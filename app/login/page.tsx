@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Mochiy_Pop_One, Archivo } from "next/font/google"
 
@@ -8,6 +9,7 @@ const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export default function LoginPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({ email: "", password: "" })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
@@ -38,7 +40,10 @@ export default function LoginPage() {
 
     setLoading(true)
     console.log("Login:", formData)
-    setTimeout(() => setLoading(false), 1000)
+    setTimeout(() => {
+      setLoading(false)
+      router.push("/home")
+    }, 2000) // 2-second delay
   }
 
   const isFormValid = () =>
