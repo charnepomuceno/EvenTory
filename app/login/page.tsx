@@ -8,16 +8,43 @@ const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [formData, setFormData] = useState({ email: "", password: "" })
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    if (!formData.email.trim()) newErrors.email = "Email is required"
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "Please enter a valid email address"
+
+    if (!formData.password.trim()) newErrors.password = "Password is required"
+    else if (formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters"
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!validateForm()) return
+
     setLoading(true)
-    console.log("Login:", { email, password })
+    console.log("Login:", formData)
     setTimeout(() => setLoading(false), 1000)
   }
+
+  const isFormValid = () =>
+    formData.email.trim() &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
+    formData.password.trim().length >= 6
 
   return (
     <main
@@ -29,30 +56,19 @@ export default function LoginPage() {
         backgroundAttachment: "fixed",
       }}
     >
-      {/* Logo and Tagline */}
       <div className="mb-8 md:mb-12 text-center">
-        <img
-          src="/images/eventory.png"
-          alt="Eventory Logo"
-          className="h-16 md:h-20 mx-auto mb-2"
-        />
+        <img src="/images/eventory.png" alt="Eventory Logo" className="h-16 md:h-20 mx-auto mb-2" />
         <p className="text-slate-500 text-sm md:text-base font-medium">
           Quality Filipino and Bicolano Catering
         </p>
       </div>
 
-      {/* Auth Card */}
       <div className="w-full max-w-md md:max-w-lg bg-white/90 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 border border-white/30">
-        {/* Welcome Section */}
         <div className="mb-6 md:mb-8">
-          <h1
-            className={`text-2xl md:text-3xl font-bold text-[#003d5c] mb-2 ${mochiyPopOne.className}`}
-          >
+          <h1 className={`text-2xl md:text-3xl font-bold text-[#003d5c] mb-2 ${mochiyPopOne.className}`}>
             Welcome
           </h1>
-          <p className="text-slate-600 text-xs md:text-sm font-medium">
-            Sign in to your account
-          </p>
+          <p className="text-slate-600 text-xs md:text-sm font-medium">Sign in to your account</p>
         </div>
 
         {/* Toggle Buttons */}
@@ -71,40 +87,51 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-[#003d5c] font-medium mb-2 text-sm">
-              Email
-            </label>
+            <label className="block text-[#003d5c] font-medium mb-2 text-sm">Email</label>
             <input
               type="email"
+              name="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#669BBC] transition-all"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                errors.email ? "border-red-500" : "border-[#e8d5c4]"
+              }`}
               placeholder="Enter your email"
             />
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
           <div>
-            <label className="block text-[#003d5c] font-medium mb-2 text-sm">
-              Password
-            </label>
+            <label className="block text-[#003d5c] font-medium mb-2 text-sm">Password</label>
             <input
               type="password"
+              name="password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#669BBC] transition-all"
+              value={formData.password}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                errors.password ? "border-red-500" : "border-[#e8d5c4]"
+              }`}
               placeholder="Enter your password"
             />
+            {errors.password ? (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            ) : (
+              <p className="text-gray-500 text-xs mt-1">Minimum 6 characters required</p>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-3 mt-4 bg-[#669BBC] hover:bg-[#5a87a8] text-white font-bold text-base rounded-lg transition-all duration-300 disabled:opacity-70"
+            disabled={!isFormValid() || loading}
+            className={`w-full py-3 mt-4 font-bold text-base rounded-lg transition-all duration-300 ${
+              !isFormValid() || loading
+                ? "bg-gray-400 text-white cursor-not-allowed"
+                : "bg-[#669BBC] hover:bg-[#5a87a8] text-white"
+            }`}
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
