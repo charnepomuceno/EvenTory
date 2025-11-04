@@ -32,7 +32,9 @@ export default function ManageMenuItems() {
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Image src="/logo.png" alt="Eventory Logo" width={120} height={40} className="h-10 w-auto" />
+              <Link href="/admin">
+                <Image src="/logo.png" alt="Eventory Logo" width={120} height={40} className="h-10 w-auto" />
+              </Link>
             </div>
 
             {/* Center Links */}
