@@ -46,7 +46,7 @@ export default function RegisterPage() {
     console.log("Register:", formData)
     setTimeout(() => {
       setLoading(false)
-      router.push("/home")
+      router.push("/login")
     }, 2000) // 2-second delay
   }
 
