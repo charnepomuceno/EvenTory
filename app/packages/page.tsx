@@ -297,7 +297,7 @@ export default function PackagesPage() {
 
             <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
                   isActive("/profile")
                     ? "bg-accent text-primary-foreground border border-accent"
                     : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
@@ -388,14 +388,14 @@ export default function PackagesPage() {
                     <button
                       onClick={() => handleBookNow(pkg)}
                       title="Book this package now"
-                      className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy text-sm hover:bg-accent/90 transition-colors duration-200"
+                      className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy text-sm hover:bg-accent/90 transition-colors duration-200 cursor-pointer"
                     >
                       Book Now
                     </button>
                     <button
                       onClick={() => handleCustomize(pkg)}
                       title="Customize this package"
-                      className="flex-1 px-4 py-3 border border-accent text-accent rounded-lg font-mochiy text-sm hover:bg-accent/10 transition-colors duration-200"
+                      className="flex-1 px-4 py-3 border border-accent text-accent rounded-lg font-mochiy text-sm hover:bg-accent/10 transition-colors duration-200 cursor-pointer"
                     >
                       Customize
                     </button>

@@ -236,7 +236,7 @@ function Header() {
 
           <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
             <button
-              className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+              className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
                 isActive("/profile")
                   ? "bg-accent text-primary-foreground border border-accent"
                   : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
@@ -272,7 +272,7 @@ function Header() {
               Feedback
             </Link>
             <Link href="/profile" className="block">
-              <button className="w-full mt-2 px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-sm font-medium">
+              <button className="w-full mt-2 px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-sm font-medium cursor-pointer">
                 Profile
               </button>
             </Link>
@@ -369,7 +369,7 @@ export default function MenuPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 md:px-8 py-2 md:py-3 rounded-lg font-medium transition-all duration-300 font-archivo text-sm md:text-base ${
+                className={`px-6 md:px-8 py-2 md:py-3 rounded-lg font-medium transition-all duration-300 font-archivo text-sm md:text-base cursor-pointer ${
                   activeTab === tab.id
                     ? "bg-accent text-primary-foreground shadow-md"
                     : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
@@ -405,7 +405,7 @@ export default function MenuPage() {
             </p>
 
             <Link href="/packages">
-              <button className="inline-flex items-center gap-2 px-8 py-3 md:py-4 bg-destructive text-primary-foreground rounded-full font-medium hover:bg-destructive/90 transition-colors text-base md:text-lg font-mochiy">
+              <button className="inline-flex items-center gap-2 px-8 py-3 md:py-4 bg-destructive text-primary-foreground rounded-full font-medium hover:bg-destructive/90 transition-colors text-base md:text-lg font-mochiy cursor-pointer">
                 🔗 Create a Customized Menu
               </button>
             </Link>

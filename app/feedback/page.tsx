@@ -104,7 +104,7 @@ export default function FeedbackPage() {
 
             <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
                   isActive("/profile")
                     ? "bg-accent text-primary-foreground border border-accent"
                     : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
@@ -206,7 +206,7 @@ export default function FeedbackPage() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200"
+                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200 cursor-pointer"
               >
                 Submit Feedback
               </button>
