@@ -6,160 +6,15 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 
 interface MenuItem {
-  id: string
+  _id: string
   name: string
-  description: string
-  price: string
-  badge: string
-  image: string
+  category: string
+  price: number
+  description?: string
+  image?: string
 }
 
-const menuData: Record<string, MenuItem[]> = {
-  "main-dishes": [
-    {
-      id: "1",
-      name: "Bicol Express",
-      description: "Spicy pork in coconut milk with chili peppers",
-      price: "₱350",
-      badge: "Bicolano Special",
-      image: "/bicol-express-pork-coconut-spicy.jpg",
-    },
-    {
-      id: "2",
-      name: "Laing",
-      description: "Taro leaves cooked in coconut milk with shrimp",
-      price: "₱280",
-      badge: "Bicolano Special",
-      image: "/laing-taro-leaves-coconut-shrimp.jpg",
-    },
-    {
-      id: "3",
-      name: "Lechon Kawali",
-      description: "Crispy deep-fried pork belly",
-      price: "₱400",
-      badge: "Filipino Classic",
-      image: "/lechon-kawali-crispy-pork-belly.jpg",
-    },
-    {
-      id: "4",
-      name: "Kare-Kare",
-      description: "Oxtail and vegetables in peanut sauce",
-      price: "₱420",
-      badge: "Filipino Classic",
-      image: "/kare-kare-peanut-sauce-vegetables.jpg",
-    },
-    {
-      id: "5",
-      name: "Pinakbet",
-      description: "Mixed vegetables with shrimp paste",
-      price: "₱250",
-      badge: "Filipino Classic",
-      image: "/pinakbet-mixed-vegetables-shrimp-paste.jpg",
-    },
-    {
-      id: "6",
-      name: "Chicken Adobo",
-      description: "Chicken marinated in soy sauce and vinegar",
-      price: "₱320",
-      badge: "Filipino Classic",
-      image: "/chicken-adobo-soy-vinegar.jpg",
-    },
-    {
-      id: "7",
-      name: "Sinigang na Baboy",
-      description: "Pork in tamarind soup",
-      price: "₱380",
-      badge: "Filipino Classic",
-      image: "/sinigang-pork-tamarind-soup.jpg",
-    },
-    {
-      id: "8",
-      name: "Pancit Canton",
-      description: "Stir-fried noodles with vegetables and meat",
-      price: "₱300",
-      badge: "Filipino Classic",
-      image: "/pancit-canton-noodles-vegetables.jpg",
-    },
-  ],
-  desserts: [
-    {
-      id: "d1",
-      name: "Halo-Halo",
-      description: "Mixed shaved ice with sweet ingredients",
-      price: "₱120",
-      badge: "Filipino Favorite",
-      image: "/halo-halo-shaved-ice-dessert.jpg",
-    },
-    {
-      id: "d2",
-      name: "Leche Flan",
-      description: "Caramelized custard dessert",
-      price: "₱150",
-      badge: "Filipino Classic",
-      image: "/leche-flan-custard-dessert.jpg",
-    },
-    {
-      id: "d3",
-      name: "Ube Cake",
-      description: "Purple yam cake with creamy frosting",
-      price: "₱200",
-      badge: "Filipino Favorite",
-      image: "/ube-cake-purple-yam.jpg",
-    },
-  ],
-  beverages: [
-    {
-      id: "b1",
-      name: "Mango Juice",
-      description: "Fresh mango juice blend",
-      price: "₱80",
-      badge: "Tropical Drink",
-      image: "/mango-juice-tropical.jpg",
-    },
-    {
-      id: "b2",
-      name: "Calamansi Juice",
-      description: "Refreshing Filipino citrus juice",
-      price: "₱60",
-      badge: "Local Favorite",
-      image: "/calamansi-juice-citrus.jpg",
-    },
-    {
-      id: "b3",
-      name: "Buko Juice",
-      description: "Fresh young coconut juice",
-      price: "₱70",
-      badge: "Tropical Drink",
-      image: "/buko-juice-coconut.jpg",
-    },
-  ],
-  appetizers: [
-    {
-      id: "a1",
-      name: "Lumpia",
-      description: "Spring rolls with meat and vegetable filling",
-      price: "₱180",
-      badge: "Filipino Classic",
-      image: "/lumpia-spring-rolls.jpg",
-    },
-    {
-      id: "a2",
-      name: "Siomai",
-      description: "Steamed pork dumplings",
-      price: "₱150",
-      badge: "Asian Favorite",
-      image: "/placeholder.svg?height=300&width=400",
-    },
-    {
-      id: "a3",
-      name: "Fish Balls",
-      description: "Crispy fried fish balls with sauce",
-      price: "₱100",
-      badge: "Street Food",
-      image: "/placeholder.svg?height=300&width=400",
-    },
-  ],
-}
+const emptyMenuData: Record<string, MenuItem[]> = { 'main-dishes': [], desserts: [], beverages: [], appetizers: [] }
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -299,7 +154,7 @@ function MenuItem({ item }: { item: MenuItem }) {
         <div className="flex items-start justify-between gap-3 mb-2">
           <h3 className="text-lg md:text-xl font-mochiy text-primary">{item.name}</h3>
           <span className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs font-medium font-archivo whitespace-nowrap">
-            {item.badge}
+            {item.category}
           </span>
         </div>
 
@@ -314,6 +169,58 @@ function MenuItem({ item }: { item: MenuItem }) {
 export default function MenuPage() {
   const [activeTab, setActiveTab] = useState("main-dishes")
   const [isScrolled, setIsScrolled] = useState(false)
+
+  const [menuItems, setMenuItems] = useState<Record<string, MenuItem[]>>(emptyMenuData)
+  const [loadingItems, setLoadingItems] = useState(false)
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      setLoadingItems(true)
+      try {
+        const res = await fetch('/api/items')
+        const json = await res.json()
+        if (json.success) {
+          const items: MenuItem[] = json.data.map((it: any) => ({
+            _id: it._id,
+            name: it.name,
+            category: it.category,
+            price: it.price || 0,
+            description: it.description || '',
+            image: it.image || '',
+          }))
+
+          const grouped: Record<string, MenuItem[]> = { 'main-dishes': [], desserts: [], beverages: [], appetizers: [] }
+          items.forEach((it) => {
+            switch (it.category) {
+              case 'Main Dish':
+                grouped['main-dishes'].push(it)
+                break
+              case 'Dessert':
+                grouped['desserts'].push(it)
+                break
+              case 'Beverage':
+                grouped['beverages'].push(it)
+                break
+              case 'Appetizer':
+              case 'Side Dish':
+                grouped['appetizers'].push(it)
+                break
+              default:
+                grouped['main-dishes'].push(it)
+            }
+          })
+
+          setMenuItems(grouped)
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoadingItems(false)
+      }
+    }
+
+    fetchItems()
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -385,8 +292,8 @@ export default function MenuPage() {
             className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-24 opacity-0 animate-fade-in"
             style={{ animationDelay: "0.6s" }}
           >
-            {menuData[activeTab].map((item) => (
-              <MenuItem key={item.id} item={item} />
+            {(menuItems[activeTab] || []).map((item) => (
+              <MenuItem key={item._id} item={item} />
             ))}
           </div>
 

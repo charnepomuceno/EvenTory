@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Star, Eye, Search, Trash2, EyeOff, LogOut, TrendingUp } from "lucide-react"
+import { Star, Eye, Search, Trash2, EyeOff, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 interface Feedback {
@@ -78,81 +78,17 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundImage: "url(/background.png)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      {/* Header */}
-      <nav className="bg-transparent">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Left: Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/admin">
-              <Image
-                src="/logo.png"
-                alt="Eventory Logo"
-                width={120}
-                height={40}
-                className="h-10 w-auto"
-              />
-            </Link>
-          </div>
-      
-          {/* Center: Nav Links */}
-          <div className="flex items-center gap-8 mx-auto">
-            <Link
-                href="/admin/booking"
-        className="text-gray-700 hover:text-blue-600 font-medium"
-      >
-              Bookings
-            </Link>
-            <Link href="/admin/items" className="text-gray-700 hover:text-blue-600 font-medium">
-              Items
-            </Link>
-            <Link href="/admin/packages" className="text-gray-700 hover:text-blue-600 font-medium">
-              Packages
-            </Link>
-            <Link href="/admin/payments" className="text-gray-700 hover:text-blue-600 font-medium">
-              Payments
-            </Link>
-            <Link href="/admin/feedback" className="text-gray-700 hover:text-blue-800 font-medium border-2 border-blue-800 bg-white/50 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition">
-              Feedback
-            </Link>
-          </div>
-      
-          {/* Right: Logout */}
-          <div className="flex-shrink-0">
-            <button className="flex items-center gap-2 text-gray-700 hover:text-red-600 font-medium">
-              <LogOut size={20} />
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+    <main className="max-w-7xl mx-auto px-6 py-8 relative z-20">
         {/* Page Title */}
         <div className="mb-8">
-          <h1
-              className="text-4xl font-bold text-red-900 mb-2"
-              style={{ fontFamily: "MochiyPopOne" }}
-            >
-              Feedback Management
-            </h1>
+          <h1 className="text-4xl font-bold text-red-900 mb-2 font-mochiy">Feedback Management</h1>
           <p className="text-gray-600">Review and moderate customer feedback</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total Reviews Card */}
-          <div className="bg-white rounded-lg p-6 shadow-lg">
+          <div className="bg-white/50 rounded-lg p-6 shadow-xl border-2 border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-600">Total Reviews</h3>
               <Star className="w-5 h-5 text-red-600" />
@@ -161,7 +97,7 @@ export default function FeedbackPage() {
           </div>
 
           {/* Average Rating Card */}
-          <div className="bg-white rounded-lg p-6 shadow-lg">
+          <div className="bg-white/50 rounded-lg p-6 shadow-xl border-2 border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-600">Average Rating</h3>
               <TrendingUp className="text-red-700 text-xl" />
@@ -172,7 +108,7 @@ export default function FeedbackPage() {
           </div>
 
           {/* Visible Reviews Card */}
-          <div className="bg-white rounded-lg p-6 shadow-lg">
+          <div className="bg-white/50 rounded-lg p-6 shadow-xl border-2 border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-600">Visible Reviews</h3>
               <Eye className="w-5 h-5 text-blue-600" />
@@ -191,7 +127,7 @@ export default function FeedbackPage() {
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
       className="w-full pl-12 pr-4 py-3 rounded-lg bg-transparent border border-gray-300 text-black placeholder-gray-500 
-      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+      focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
     />
   </div>
 </div>
@@ -199,7 +135,7 @@ export default function FeedbackPage() {
 
 
         {/* All Feedback Section */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white/70 rounded-lg shadow-lg p-8">
           <h2 className="text-2xl font-bold text-red-900 mb-2">All Feedback</h2>
           <p className="text-gray-600 mb-6">Manage customer reviews and ratings</p>
 
@@ -254,6 +190,5 @@ export default function FeedbackPage() {
           </div>
         </div>
       </main>
-    </div>
   )
 }

@@ -26,147 +26,45 @@ interface MenuItem {
   description: string
 }
 
-const packages: Package[] = [
-  {
-    id: "wedding",
-    name: "Wedding Elegance Package",
-    badge: "Premium",
-    description:
-      "Create magical memories with our premium wedding catering service featuring traditional Filipino and modern fusion dishes.",
-    guestRange: "50-100 guests",
-    mealCourses: "5-course meal",
-    priceRange: "₱35,000 - ₱50,000",
-    minPrice: 35000,
-    maxPrice: 50000,
-    inclusions: [
-      "Welcome drinks and appetizers",
-      "Main course buffet with 8 dishes",
-      "Dessert station with traditional Filipino sweets",
-      "Professional service staff",
-      "Elegant table setup and decorations",
-      "Complimentary wedding cake",
-    ],
-  },
-  {
-    id: "birthday",
-    name: "Birthday Celebration Package",
-    badge: "Popular",
-    description:
-      "Make birthdays extra special with our vibrant and delicious party catering featuring Filipino favorites.",
-    guestRange: "30-50 guests",
-    mealCourses: "3-course meal",
-    priceRange: "₱15,000 - ₱25,000",
-    minPrice: 15000,
-    maxPrice: 25000,
-    inclusions: [
-      "Party platters and finger foods",
-      "Main course buffet with 5 dishes",
-      "Dessert selection including leche flan",
-      "Beverage station with fresh juices",
-      "Festive table decorations",
-      "Complimentary birthday cake",
-    ],
-  },
-  {
-    id: "corporate",
-    name: "Corporate Event Package",
-    badge: "Business",
-    description:
-      "Impress your colleagues and clients with professional catering service perfect for meetings and corporate gatherings.",
-    guestRange: "40-80 guests",
-    mealCourses: "4-course meal",
-    priceRange: "₱20,000 - ₱35,000",
-    minPrice: 20000,
-    maxPrice: 35000,
-    inclusions: [
-      "Coffee and snack station",
-      "Buffet-style lunch or dinner with 6 dishes",
-      "Vegetarian and special diet options",
-      "Professional serving staff",
-      "Clean and efficient setup",
-      "Complimentary coffee and tea service",
-    ],
-  },
-  {
-    id: "intimate",
-    name: "Intimate Gathering Package",
-    badge: "Cozy",
-    description:
-      "Perfect for small family reunions, baptisms, or intimate celebrations with authentic Bicolano flavors.",
-    guestRange: "15-25 guests",
-    mealCourses: "3-course meal",
-    priceRange: "₱8,000 - ₱12,000",
-    minPrice: 8000,
-    maxPrice: 12000,
-    inclusions: [
-      "Welcome snacks and drinks",
-      "Home-style buffet with 4 signature dishes",
-      "Traditional Bicolano specialties",
-      "Dessert platter",
-      "Basic table setup",
-      "Friendly service staff",
-    ],
-  },
-]
+// Packages will be loaded from the API
+// We map the API/package model fields into the UI shape below
 
-const menuItems: MenuItem[] = [
-  {
-    id: "bicol-express",
-    name: "Bicol Express",
-    category: "Main Dishes",
-    price: 350,
-    description: "Spicy pork in coconut milk with chili peppers",
-  },
-  {
-    id: "laing",
-    name: "Laing",
-    category: "Main Dishes",
-    price: 280,
-    description: "Taro leaves cooked in coconut milk with shrimp",
-  },
-  {
-    id: "lechon-kawali",
-    name: "Lechon Kawali",
-    category: "Main Dishes",
-    price: 400,
-    description: "Crispy deep-fried pork belly",
-  },
-  {
-    id: "kare-kare",
-    name: "Kare-Kare",
-    category: "Main Dishes",
-    price: 420,
-    description: "Oxtail and vegetables in peanut sauce",
-  },
-  {
-    id: "pinakbet",
-    name: "Pinakbet",
-    category: "Main Dishes",
-    price: 250,
-    description: "Mixed vegetables with shrimp paste",
-  },
-  {
-    id: "chicken-adobo",
-    name: "Chicken Adobo",
-    category: "Main Dishes",
-    price: 320,
-    description: "Chicken marinated in soy sauce and vinegar",
-  },
-  {
-    id: "sinigang",
-    name: "Sinigang na Baboy",
-    category: "Main Dishes",
-    price: 380,
-    description: "Pork in tamarind soup",
-  },
-  {
-    id: "pancit-canton",
-    name: "Pancit Canton",
-    category: "Main Dishes",
-    price: 300,
-    description: "Stir-fried noodles with vegetables and meat",
-  },
-]
+const apiPackageToUI = (p: any): Package => {
+  // p expected fields from model: name, tier, status, guests, price, items
+  const priceRange = p.price || ""
+
+  // Try to parse a numeric minPrice from the price string (e.g. "₱15,000-₱25,000" or "₱15,000 - ₱25,000")
+  const parseMin = (pr: string) => {
+    try {
+      const digits = pr.replace(/[^0-9\-]/g, "").split("-")
+      const num = Number(digits[0]) || 0
+      return num
+    } catch (e) {
+      return 0
+    }
+  }
+
+  return {
+    id: p._id || String(Math.random()),
+    name: p.name || "",
+    badge: p.tier || p.status || "",
+    description: "",
+    guestRange: p.guests || "",
+    mealCourses: "",
+    priceRange: priceRange,
+    minPrice: parseMin(priceRange),
+    maxPrice: 0,
+    inclusions: Array.isArray(p.items) ? p.items : [],
+  }
+}
+
+const apiMenuItemToUI = (it: any): MenuItem => ({
+  id: it._id,
+  name: it.name,
+  category: it.category,
+  price: it.price || 0,
+  description: it.description || "",
+})
 
 export default function PackagesPage() {
   const pathname = usePathname()
@@ -177,6 +75,34 @@ export default function PackagesPage() {
   const [showCustomizeModal, setShowCustomizeModal] = useState(false)
   const [selectedMenuItems, setSelectedMenuItems] = useState<string[]>([])
   const [customPrice, setCustomPrice] = useState(0)
+
+  // Live data from API
+  const [packagesData, setPackagesData] = useState<Package[]>([])
+  const [loadingPackages, setLoadingPackages] = useState(false)
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoadingPackages(true)
+      try {
+        const [pRes, iRes] = await Promise.all([fetch('/api/packages'), fetch('/api/items')])
+        const pJson = await pRes.json()
+        const iJson = await iRes.json()
+        if (pJson.success) {
+          setPackagesData((pJson.data || []).map((p: any) => apiPackageToUI(p)))
+        }
+        if (iJson.success) {
+          setMenuItems((iJson.data || []).map((it: any) => apiMenuItemToUI(it)))
+        }
+      } catch (e) {
+        console.error('Failed to load packages/items', e)
+      } finally {
+        setLoadingPackages(false)
+      }
+    }
+
+    fetchAll()
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -337,7 +263,7 @@ export default function PackagesPage() {
       <section className="pt-2 pb-20 md:pt-4 md:pb-28 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-            {packages.map((pkg, index) => (
+            {packagesData.map((pkg, index) => (
               <div
                 key={pkg.id}
                 className="bg-card rounded-2xl shadow-lg overflow-hidden opacity-0 animate-fade-in hover:shadow-xl transition-shadow duration-300"

@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, TrendingUp, Calendar, LogOut } from "lucide-react"
+import { Search, TrendingUp, Calendar } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
@@ -58,74 +58,10 @@ export default function PaymentManagement() {
   )
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center bg-fixed"
-      style={{
-        backgroundImage: "url(/background.png)",
-      }}
-    >
-      <div className="min-h-screen bg-black/10">
-        {/* Navigation Header */}
-        <nav className="bg-transparent">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            {/* Left: Logo */}
-            <div className="flex-shrink-0">
-              <Link href="/admin">
-                <Image
-                  src="/logo.png"
-                  alt="Eventory Logo"
-                  width={120}
-                  height={40}
-                  className="h-10 w-auto"
-                />
-              </Link>
-            </div>
-
-            {/* Center: Nav Links */}
-            <div className="flex items-center gap-8 mx-auto">
-              <Link
-                href="/admin/booking"
-                className="text-gray-700 hover:text-blue-800 font-medium"
-              >
-                Bookings
-              </Link>
-              <Link href="/admin/items" className="text-gray-700 hover:text-blue-600 font-medium">
-                Items
-              </Link>
-              <Link href="/admin/packages" className="text-gray-700 hover:text-blue-600 font-medium">
-                Packages
-              </Link>
-              <Link
-                href="/admin/payments"
-                className="text-gray-700 hover:text-blue-800 font-medium border-2 border-blue-800 bg-white/50 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition"
-              >
-                Payments
-              </Link>
-              <Link href="/admin/feedback" className="text-gray-700 hover:text-blue-600 font-medium">
-                Feedback
-              </Link>
-            </div>
-
-            {/* Right: Logout */}
-            <div className="flex-shrink-0">
-              <button className="flex items-center gap-2 text-gray-700 hover:text-red-600 font-medium">
-                <LogOut size={20} />
-                Logout
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-6 py-12">
+    <main className="max-w-7xl mx-auto px-6 py-12 relative z-20">
           {/* Header Section */}
           <div className="mb-8">
-            <h1
-              className="text-4xl font-bold text-red-900 mb-2"
-              style={{ fontFamily: "MochiyPopOne" }}
-            >
-              Payment Management
-            </h1>
+            <h1 className="text-4xl font-bold text-red-900 mb-2 font-mochiy">Payment Management</h1>
             <p className="text-gray-600">Track and manage all customer payments</p>
           </div>
 
@@ -139,14 +75,14 @@ export default function PaymentManagement() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-lg bg-white border border-gray-300 text-black 
-                placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
               />
             </div>
           </div>
 
           {/* Stat Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <div className="bg-white/50 rounded-2xl p-6 shadow-xl border-2 border-gray-100">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-gray-600 text-sm font-medium mb-2">Total Revenue</p>
@@ -156,7 +92,7 @@ export default function PaymentManagement() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <div className="bg-white/50 rounded-2xl p-6 shadow-xl border-2 border-gray-100">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-gray-600 text-sm font-medium mb-2">This Month</p>
@@ -166,7 +102,7 @@ export default function PaymentManagement() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <div className="bg-white/50 rounded-2xl p-6 shadow-xl border-2 border-gray-100">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-gray-600 text-sm font-medium mb-2">Pending Payments</p>
@@ -178,7 +114,7 @@ export default function PaymentManagement() {
           </div>
 
           {/* Payments Table */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg overflow-x-auto">
+          <div className="bg-white/50 rounded-2xl p-8 shadow-lg overflow-x-auto">
             <h2 className="text-2xl font-bold text-red-900 mb-2">All Payments</h2>
             <p className="text-gray-600 text-sm mb-6">View and manage all booking payment records</p>
 
@@ -200,7 +136,7 @@ export default function PaymentManagement() {
               </thead>
               <tbody>
                 {filteredPayments.map((payment, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={index} className="border-b border-gray-100">
                     <td className="py-4 px-4 text-red-900 font-semibold">{payment.id}</td>
                     <td className="py-4 px-4 text-gray-900">{payment.customer}</td>
                     <td className="py-4 px-4 text-red-900 font-medium">{payment.event}</td>
@@ -239,7 +175,5 @@ export default function PaymentManagement() {
             )}
           </div>
         </main>
-      </div>
-    </div>
   )
 }
