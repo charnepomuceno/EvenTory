@@ -69,7 +69,7 @@ function Header() {
 
           <div className="hidden md:block opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
             <Link href="/login">
-              <button className="px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-base font-medium">
+              <button className="px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-base font-medium cursor-pointer">
                 Login
               </button>
             </Link>
@@ -148,7 +148,7 @@ function Hero() {
 
           <Link href="/login">
             <button
-              className={`px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 transition-all duration-1000 delay-500 ${
+              className={`px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 transition-all duration-1000 delay-500 cursor-pointer ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
@@ -227,9 +227,11 @@ function FeaturedPackages() {
                   </p>
                 </div>
 
-                <button className="w-full px-4 py-2 bg-destructive text-primary-foreground rounded-full font-medium hover:bg-destructive/90 transition-colors text-sm md:text-base">
-                  View Details
-                </button>
+                <Link href="/login">
+                  <button className="w-full px-4 py-2 bg-destructive text-primary-foreground rounded-full font-medium hover:bg-destructive/90 transition-colors text-sm md:text-base cursor-pointer">
+                    View Details
+                  </button>
+                </Link>
               </div>
             </div>
           ))}
@@ -379,12 +381,12 @@ function CTA() {
           style={{ animationDelay: "0.5s" }}
         >
           <Link href="/login">
-            <button className="px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 hover:shadow-lg transition-all font-archivo">
+            <button className="px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 hover:shadow-lg transition-all font-archivo cursor-pointer">
               Browse Menu
             </button>
           </Link>
           <Link href="/login">
-            <button className="px-8 py-3 bg-transparent text-accent border border-accent rounded-full font-medium hover:bg-accent hover:text-primary-foreground transition-all font-archivo">
+            <button className="px-8 py-3 bg-transparent text-accent border border-accent rounded-full font-medium hover:bg-accent hover:text-primary-foreground transition-all font-archivo cursor-pointer">
               Book Now
             </button>
           </Link>
