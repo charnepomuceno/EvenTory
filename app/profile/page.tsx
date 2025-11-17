@@ -196,7 +196,7 @@ export default function ProfilePage() {
 
             <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
                   isActive("/profile")
                     ? "bg-accent text-primary-foreground border border-accent"
                     : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
@@ -238,7 +238,7 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={handleEditProfile}
-                className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors text-base font-medium font-archivo self-start md:self-auto"
+                className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors text-base font-medium font-archivo self-start md:self-auto cursor-pointer"
               >
                 ✎ Edit Profile
               </button>
@@ -315,7 +315,7 @@ export default function ProfilePage() {
                   <div className="border-t border-border pt-4">
                     <button
                       onClick={() => setExpandedOrderId(expandedOrderId === booking.id ? null : booking.id)}
-                      className="text-accent hover:text-accent/80 transition-colors text-sm font-archivo font-medium mb-4"
+                      className="text-accent hover:text-accent/80 transition-colors text-sm font-archivo font-medium mb-4 cursor-pointer"
                     >
                       {expandedOrderId === booking.id ? "Hide Details ▼" : "View Full Details ▶"}
                     </button>
@@ -352,7 +352,7 @@ export default function ProfilePage() {
                     {booking.status === "pending" && (
                       <button
                         onClick={() => handleCancelOrder(booking.id)}
-                        className="w-full px-4 py-2 border border-destructive text-destructive rounded-lg hover:bg-destructive hover:text-primary-foreground transition-all duration-200 hover:shadow-lg active:scale-95 text-sm font-medium font-archivo"
+                        className="w-full px-4 py-2 border border-destructive text-destructive rounded-lg hover:bg-destructive hover:text-primary-foreground transition-all duration-200 hover:shadow-lg active:scale-95 text-sm font-medium font-archivo cursor-pointer"
                       >
                         Cancel Order
                       </button>
@@ -366,7 +366,7 @@ export default function ProfilePage() {
           <div className="flex justify-center opacity-0 animate-fade-in" style={{ animationDelay: "0.6s" }}>
             <button
               onClick={handleLogout}
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors text-base font-medium font-archivo flex items-center gap-2"
+              className="px-8 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors text-base font-medium font-archivo flex items-center gap-2 cursor-pointer"
             >
               <LogOut className="w-5 h-5" />
               Logout
