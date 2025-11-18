@@ -335,7 +335,7 @@ export default function BookPage() {
                   </p>
                   {selectedPackageInfo.customItems && (
                     <div>
-                      <p className="font-semibold mb-2">Included Items:</p>
+                      <p className="font-semibold mb-2">Additional Items:</p>
                       <ul className="list-disc list-inside space-y-1 text-foreground/80">
                         {selectedPackageInfo.customItems.map((item: string, i: number) => (
                           <li key={i}>{item}</li>
