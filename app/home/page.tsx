@@ -381,7 +381,7 @@ function CheckAvailability() {
               </p>
               <p className="text-green-700 mb-4">✓ This date is available for booking</p>
               <Link href="/book">
-                <button className="px-5 py-2.5 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-all font-medium text-sm">
+                <button className="px-5 py-2.5 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-all font-medium text-sm cursor-pointer">
                   Book this Date
                 </button>
               </Link>
