@@ -5,7 +5,7 @@ import Package from "@/lib/models/admin-package.js"
 export async function GET(request, { params }) {
   try {
     await dbConnect()
-    const { id } = params
+    const { id } = await params
 
     const pkg = await Package.findById(id)
     if (!pkg) {
@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await dbConnect()
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
     const pkg = await Package.findByIdAndUpdate(id, body, {
@@ -44,7 +44,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await dbConnect()
-    const { id } = params
+    const { id } = await params
 
     const pkg = await Package.findByIdAndDelete(id)
     if (!pkg) {

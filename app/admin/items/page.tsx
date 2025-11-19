@@ -21,6 +21,9 @@ export default function ManageMenuItems() {
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: "", category: "Main Dish", cost: "", price: "", status: "Available" });
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", category: "Main Dish", cost: "", price: "", status: "Available" });
 
   const fetchItems = async (search = "") => {
     setLoading(true);
@@ -69,6 +72,49 @@ export default function ManageMenuItems() {
       console.error(err);
     }
   };
+
+  const openEdit = (item: Item) => {
+    setEditingId(item._id)
+    setEditForm({ name: item.name, category: item.category, cost: String(item.cost), price: String(item.price), status: item.status })
+    setShowEdit(true)
+  }
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingId) return
+    try {
+      const body = {
+        name: editForm.name,
+        category: editForm.category,
+        cost: Number(editForm.cost || 0),
+        price: Number(editForm.price || 0),
+        status: editForm.status,
+      }
+      const res = await fetch(`/api/items/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const json = await res.json()
+      if (json.success) {
+        setShowEdit(false)
+        setEditingId(null)
+        fetchItems()
+      } else {
+        console.error(json.error)
+      }
+    } catch (err) { console.error(err) }
+  }
+
+  const handleDelete = async (id: string) => {
+    const ok = window.confirm('Delete this item? This cannot be undone.')
+    if (!ok) return
+    try {
+      const res = await fetch(`/api/items/${id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (json.success) {
+        fetchItems()
+      } else {
+        console.error(json.error)
+      }
+    } catch (e) { console.error(e) }
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-12 relative z-20">
@@ -133,10 +179,10 @@ export default function ManageMenuItems() {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
-                      <button className="bg-yellow-50 text-yellow-700 p-2 rounded-full">
+                      <button onClick={() => openEdit(item)} className="bg-yellow-50 text-yellow-700 p-2 rounded-full">
                         <Pencil size={18} />
                       </button>
-                      <button className="bg-red-600 text-white p-2 rounded-full">
+                      <button onClick={() => handleDelete(item._id)} className="bg-red-600 text-white p-2 rounded-full">
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -179,6 +225,36 @@ export default function ManageMenuItems() {
             <div className="mt-4 flex justify-end gap-3">
               <button type="button" onClick={() => setShowAdd(false)} className="px-4 py-2 border rounded">Cancel</button>
               <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">Create</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
+      {showEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <form onSubmit={handleUpdate} className="bg-white rounded-lg p-6 w-[520px]">
+            <h3 className="text-lg font-semibold mb-4">Edit Item</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <input required placeholder="Name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="border px-3 py-2 rounded" />
+              <select value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} className="border px-3 py-2 rounded">
+                <option>Main Dish</option>
+                <option>Dessert</option>
+                <option>Beverage</option>
+                <option>Appetizer</option>
+                <option>Side Dish</option>
+              </select>
+              <input required placeholder="Cost" value={editForm.cost} onChange={(e) => setEditForm({ ...editForm, cost: e.target.value })} className="border px-3 py-2 rounded" />
+              <input required placeholder="Price" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} className="border px-3 py-2 rounded" />
+              <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className="border px-3 py-2 rounded">
+                <option>Available</option>
+                <option>Unavailable</option>
+              </select>
+            </div>
+
+            <div className="mt-4 flex justify-end gap-3">
+              <button type="button" onClick={() => setShowEdit(false)} className="px-4 py-2 border rounded">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">Save</button>
             </div>
           </form>
         </div>

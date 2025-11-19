@@ -21,6 +21,9 @@ export default function PackagesPage() {
   const [loading, setLoading] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: "", tier: "Popular", status: "Active", guests: "", price: "", items: "" })
+  const [showEdit, setShowEdit] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ name: "", tier: "Popular", status: "Active", guests: "", price: "", items: "" })
 
   const fetchPackages = async () => {
     setLoading(true)
@@ -71,6 +74,50 @@ export default function PackagesPage() {
         console.error(json.error)
       }
     } catch (err) { console.error(err) }
+  }
+
+  const openEdit = (pkg: PackageType) => {
+    setEditingId(pkg._id)
+    setEditForm({ name: pkg.name, tier: pkg.tier, status: pkg.status, guests: pkg.guests, price: pkg.price, items: (pkg.items || []).join(', ') })
+    setShowEdit(true)
+  }
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingId) return
+    try {
+      const body = {
+        name: editForm.name,
+        tier: editForm.tier,
+        status: editForm.status,
+        guests: editForm.guests,
+        price: editForm.price,
+        items: editForm.items.split(',').map(s => s.trim()).filter(Boolean),
+      }
+      const res = await fetch(`/api/packages/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const json = await res.json()
+      if (json.success) {
+        setShowEdit(false)
+        setEditingId(null)
+        fetchPackages()
+      } else {
+        console.error(json.error)
+      }
+    } catch (err) { console.error(err) }
+  }
+
+  const handleDelete = async (id: string) => {
+    const ok = window.confirm('Delete this package? This cannot be undone.')
+    if (!ok) return
+    try {
+      const res = await fetch(`/api/packages/${id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (json.success) {
+        fetchPackages()
+      } else {
+        console.error(json.error)
+      }
+    } catch (e) { console.error(e) }
   }
 
   return (
@@ -140,11 +187,11 @@ export default function PackagesPage() {
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-3">
-                <button className="border-2 border-red-700 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2">
+                <button onClick={() => openEdit(pkg)} className="border-2 border-red-700 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2">
                   <Pencil size={18} />
                   Edit
                 </button>
-                <button className="bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2">
+                <button onClick={() => handleDelete(pkg._id)} className="bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2">
                   <Trash2 size={18} />
                   Delete
                 </button>
@@ -178,6 +225,35 @@ export default function PackagesPage() {
             <div className="mt-4 flex justify-end gap-3">
               <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 border rounded">Cancel</button>
               <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">Create</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Package Modal */}
+      {showEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <form onSubmit={handleUpdate} className="bg-white rounded-lg p-6 w-[640px]">
+            <h3 className="text-lg font-semibold mb-4">Edit Package</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <input required placeholder="Name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="border px-3 py-2 rounded" />
+              <select value={editForm.tier} onChange={(e) => setEditForm({ ...editForm, tier: e.target.value })} className="border px-3 py-2 rounded">
+                <option>Premium</option>
+                <option>Popular</option>
+                <option>Business</option>
+              </select>
+              <input required placeholder="Guests" value={editForm.guests} onChange={(e) => setEditForm({ ...editForm, guests: e.target.value })} className="border px-3 py-2 rounded" />
+              <input required placeholder="Price" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} className="border px-3 py-2 rounded" />
+              <input placeholder="Items (comma separated)" value={editForm.items} onChange={(e) => setEditForm({ ...editForm, items: e.target.value })} className="col-span-2 border px-3 py-2 rounded" />
+              <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className="border px-3 py-2 rounded">
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </div>
+
+            <div className="mt-4 flex justify-end gap-3">
+              <button type="button" onClick={() => setShowEdit(false)} className="px-4 py-2 border rounded">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">Save</button>
             </div>
           </form>
         </div>

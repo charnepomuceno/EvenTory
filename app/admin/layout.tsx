@@ -1,7 +1,7 @@
 import React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Calendar, LogOut, Star, TrendingUp, Package as PackageIcon } from "lucide-react"
+import { Calendar, LogOut, Star, TrendingUp, Package as PackageIcon, Utensils } from "lucide-react"
 
 export const metadata = {
   title: "Admin - EvenTory",
@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
 
     { label: "Bookings", href: "/admin/booking", icon: Calendar },
-    { label: "Items", href: "/admin/items", icon: PackageIcon },
+    { label: "Items", href: "/admin/items", icon: Utensils },
     { label: "Packages", href: "/admin/packages", icon: PackageIcon },
     { label: "Payments", href: "/admin/payments", icon: TrendingUp },
     { label: "Feedback", href: "/admin/feedback", icon: Star },
