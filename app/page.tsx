@@ -165,26 +165,26 @@ function FeaturedPackages() {
   const packages = [
     {
       id: 1,
-      title: "Wedding Package",
-      description: "Make your special day unforgettable with our elegant wedding catering service.",
-      price: "₱35,000",
-      image: "/images/weddingpackage.png",
+      title: "Corporate Package",
+      description: "Simple, efficient meals and snacks tailored for business events.",
+      price: "₱250/head",
+      image: "/images/corporate.jpg",
       color: "text-destructive",
     },
     {
       id: 2,
-      title: "Birthday Package",
-      description: "Celebrate in style with our fun birthday party catering packages.",
-      price: "₱15,000",
-      image: "/images/bdaypackage.png",
+      title: "Buffet Package",
+      description: "Enjoy a wide selection of dishes where guests serve themselves.",
+      price: "₱400/head",
+      image: "/images/buffet.png",
       color: "text-destructive",
     },
     {
       id: 3,
-      title: "Corporate Package",
-      description: "Professional catering for your business events and corporate gatherings.",
-      price: "₱20,000",
-      image: "/images/corppackage.png",
+      title: "Premium Package",
+      description: "The complete solution: food, buffet setup, staff, and decorations.",
+      price: "₱600/head",
+      image: "/images/premium.png",
       color: "text-destructive",
     },
   ]
@@ -322,7 +322,7 @@ function Testimonials() {
       name: "Ana Reyes",
       event: "Birthday Party",
       rating: 5,
-      text: '"Everyone loved the food and service. The team was so helpful and accommodating!"',
+      text: '"Everyone loved the food and service. The team was so helpful and accommodating it made the party so fun!"',
     },
   ]
 
