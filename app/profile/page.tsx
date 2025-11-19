@@ -15,17 +15,35 @@ export default function ProfilePage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
-
   const [profileData, setProfileData] = useState({
-    fullName: "Juan Dela Cruz",
-    email: "juan@example.com",
-    phone: "+63 912 345 6789",
-    memberSince: "January 2024",
+    fullName: "",
+    phone: "",
+    memberSince: "",
   })
 
   const [editFormData, setEditFormData] = useState(profileData)
 
   useEffect(() => {
+        const storedUser = localStorage.getItem("current_user")
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      const today = new Date()
+      const memberSince = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      
+      setProfileData((prev) => ({
+        ...prev,
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        memberSince: memberSince,
+      }))
+      setEditFormData((prev) => ({
+        ...prev,
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        memberSince: memberSince,
+      }))
+    }
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
     }
@@ -40,13 +58,17 @@ export default function ProfilePage() {
 
   const handleSaveProfile = () => {
     setProfileData(editFormData)
+    localStorage.setItem("current_user", JSON.stringify({
+      fullName: editFormData.fullName,
+      phoneNumber: editFormData.phone
+    }))
     setIsEditDialogOpen(false)
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 3000)
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    localStorage.removeItem("current_user")
     router.push("/login")
   }
 
@@ -250,10 +272,6 @@ export default function ProfilePage() {
                 <p className="text-primary text-lg font-archivo font-semibold">{profileData.fullName}</p>
               </div>
               <div>
-                <p className="text-foreground/60 text-sm font-archivo mb-1">Email</p>
-                <p className="text-primary text-lg font-archivo font-semibold">{profileData.email}</p>
-              </div>
-              <div>
                 <p className="text-foreground/60 text-sm font-archivo mb-1">Phone</p>
                 <p className="text-primary text-lg font-archivo font-semibold">{profileData.phone}</p>
               </div>
@@ -376,8 +394,8 @@ export default function ProfilePage() {
       </section>
 
       {isEditDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#f7efe5] rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
             <h2 className="text-2xl font-mochiy text-primary mb-6">Edit Profile</h2>
 
             <div className="space-y-4 mb-6">
@@ -391,16 +409,7 @@ export default function ProfilePage() {
                   className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
                 />
               </div>
-              <div>
-                <label className="block text-foreground/70 text-sm font-archivo mb-2">Email</label>
-                <input
-                  aria-label="email"
-                  type="email"
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
-              </div>
+
               <div>
                 <label className="block text-foreground/70 text-sm font-archivo mb-2">Phone</label>
                 <input
@@ -416,13 +425,13 @@ export default function ProfilePage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setIsEditDialogOpen(false)}
-                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary transition-colors font-archivo"
+                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary transition-colors font-archivo cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveProfile}
-                className="flex-1 px-4 py-2 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-colors font-archivo font-medium"
+                className="flex-1 px-4 py-2 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-colors font-archivo font-medium cursor-pointer"
               >
                 Save Changes
               </button>
@@ -432,7 +441,7 @@ export default function ProfilePage() {
       )}
 
       {cancelDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-mochiy text-primary">Cancel Order</h2>
