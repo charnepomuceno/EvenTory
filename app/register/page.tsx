@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
+    email: "",
     password: "",
     confirmPassword: "",
   })
@@ -56,6 +57,7 @@ export default function RegisterPage() {
         fullName: formData.fullName,
         phoneNumber: formData.phoneNumber,
         password: formData.password,
+        email: formData.email || "",
       }
       localStorage.setItem("registered_users", JSON.stringify(registeredUsers))
 
@@ -161,6 +163,18 @@ export default function RegisterPage() {
                 placeholder="Enter your Phone Number"
               />
               {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+            </div>
+
+            <div>
+              <label className="block text-[#003d5c] font-medium mb-2 text-sm">Email (Optional)</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all"
+                placeholder="Enter your Email (optional)"
+              />
             </div>
 
             <div>

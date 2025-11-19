@@ -62,11 +62,12 @@ export default function LoginPage() {
     setTimeout(() => {
       setLoading(false)
       if (isAdmin) {
-        router.push("/admin-dashboard")
+        router.push("/admin")
       } else {
         localStorage.setItem("current_user", JSON.stringify({
           phoneNumber: formData.phoneNumber,
-          fullName: registeredUsers[formData.phoneNumber]?.fullName || ""
+          fullName: registeredUsers[formData.phoneNumber]?.fullName || "",
+          email: registeredUsers[formData.phoneNumber]?.email || "",
         }))
         router.push("/home")
       }

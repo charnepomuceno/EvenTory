@@ -2,9 +2,9 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from "react"
-import { MapPin, Users, Calendar, LogOut, X } from "lucide-react"
+import { MapPin, Users, Calendar, LogOut, X } from 'lucide-react'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -15,33 +15,35 @@ export default function ProfilePage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
+
   const [profileData, setProfileData] = useState({
     fullName: "",
     phone: "",
+    email: "",
     memberSince: "",
   })
 
   const [editFormData, setEditFormData] = useState(profileData)
 
   useEffect(() => {
-        const storedUser = localStorage.getItem("current_user")
+    const storedUser = localStorage.getItem("current_user")
     if (storedUser) {
       const userData = JSON.parse(storedUser)
       const today = new Date()
       const memberSince = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
       
-      setProfileData((prev) => ({
-        ...prev,
+      setProfileData({
         fullName: userData.fullName || "",
         phone: userData.phoneNumber || "",
+        email: userData.email || "",
         memberSince: memberSince,
-      }))
-      setEditFormData((prev) => ({
-        ...prev,
+      })
+      setEditFormData({
         fullName: userData.fullName || "",
         phone: userData.phoneNumber || "",
+        email: userData.email || "",
         memberSince: memberSince,
-      }))
+      })
     }
 
     const handleScroll = () => {
@@ -57,17 +59,37 @@ export default function ProfilePage() {
   }
 
   const handleSaveProfile = () => {
+    const storedUser = localStorage.getItem("current_user")
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      
+      // Update registered_users database with new data
+      const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "{}")
+      if (registeredUsers[userData.phoneNumber]) {
+        registeredUsers[userData.phoneNumber] = {
+          ...registeredUsers[userData.phoneNumber],
+          fullName: editFormData.fullName,
+          email: editFormData.email,
+        }
+        localStorage.setItem("registered_users", JSON.stringify(registeredUsers))
+      }
+      
+      // Update current_user with new data
+      localStorage.setItem("current_user", JSON.stringify({
+        phoneNumber: userData.phoneNumber,
+        fullName: editFormData.fullName,
+        email: editFormData.email,
+      }))
+    }
+
     setProfileData(editFormData)
-    localStorage.setItem("current_user", JSON.stringify({
-      fullName: editFormData.fullName,
-      phoneNumber: editFormData.phone
-    }))
     setIsEditDialogOpen(false)
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 3000)
   }
 
   const handleLogout = () => {
+    localStorage.removeItem("authToken")
     localStorage.removeItem("current_user")
     router.push("/login")
   }
@@ -159,7 +181,7 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <header
+            <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
         }`}
@@ -176,7 +198,6 @@ export default function ProfilePage() {
                 priority
               />
             </Link>
-
             <nav className="hidden md:flex items-center gap-15">
               <Link
                 href="/menu"
@@ -215,7 +236,6 @@ export default function ProfilePage() {
                 Feedback
               </Link>
             </nav>
-
             <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <button
                 className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
@@ -230,7 +250,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </header>
-
       <section className="relative w-full pt-20 md:pt-24 pb-2 md:pb-4 overflow-hidden bg-background">
         <div className="absolute inset-0 z-0">
           <Image src="/images/background.png" alt="Background" fill className="object-cover" priority />
@@ -274,6 +293,10 @@ export default function ProfilePage() {
               <div>
                 <p className="text-foreground/60 text-sm font-archivo mb-1">Phone</p>
                 <p className="text-primary text-lg font-archivo font-semibold">{profileData.phone}</p>
+              </div>
+              <div>
+                <p className="text-foreground/60 text-sm font-archivo mb-1">Email</p>
+                <p className="text-primary text-lg font-archivo font-semibold">{profileData.email || "Not set"}</p>
               </div>
               <div>
                 <p className="text-foreground/60 text-sm font-archivo mb-1">Member Since</p>
@@ -409,7 +432,6 @@ export default function ProfilePage() {
                   className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
                 />
               </div>
-
               <div>
                 <label className="block text-foreground/70 text-sm font-archivo mb-2">Phone</label>
                 <input
@@ -418,6 +440,17 @@ export default function ProfilePage() {
                   value={editFormData.phone}
                   onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                   className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
+                />
+              </div>
+              <div>
+                <label className="block text-foreground/70 text-sm font-archivo mb-2">Email</label>
+                <input
+                  aria-label="email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  placeholder="Enter your email (optional)"
                 />
               </div>
             </div>
@@ -442,7 +475,7 @@ export default function ProfilePage() {
 
       {cancelDialogOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+          <div className="bg-[#f7efe5] rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-mochiy text-primary">Cancel Order</h2>
               <button
