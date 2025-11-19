@@ -405,7 +405,7 @@ export default function MenuPage() {
             </p>
 
             <Link href="/packages">
-              <button className="inline-flex items-center gap-2 px-8 py-3 md:py-4 bg-destructive text-primary-foreground rounded-full font-medium hover:bg-destructive/90 transition-colors text-base md:text-lg font-mochiy cursor-pointer">
+              <button className="inline-flex items-center gap-2 px-4 py-2 md:py-4 bg-destructive text-primary-foreground rounded-full font-bold hover:bg-destructive/90 transition-colors text-sm md:text-base cursor-pointer">
                 🔗 Create a Customized Menu
               </button>
             </Link>
