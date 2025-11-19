@@ -4,12 +4,16 @@ import Link from "next/link"
 import { useRouter } from 'next/navigation'
 import { useState } from "react"
 import { Mochiy_Pop_One, Archivo } from 'next/font/google'
+import { Eye, EyeOff } from 'lucide-react'
 
 const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export default function RegisterPage() {
   const router = useRouter()
+  const [registrationType, setRegistrationType] = useState<'phone' | 'email'>('phone')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
@@ -25,9 +29,15 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {}
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required"
 
-    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required"
-    else if (!/^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, "")))
-      newErrors.phoneNumber = "Please enter a valid phone number"
+    if (registrationType === 'phone') {
+      if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required"
+      else if (!/^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, "")))
+        newErrors.phoneNumber = "Please enter a valid phone number"
+    } else {
+      if (!formData.email.trim()) newErrors.email = "Email is required"
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+        newErrors.email = "Please enter a valid email"
+    }
 
     if (!formData.password.trim()) newErrors.password = "Password is required"
     else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
@@ -53,11 +63,13 @@ export default function RegisterPage() {
 
     setTimeout(() => {
       const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "{}")
-      registeredUsers[formData.phoneNumber] = {
+      const key = registrationType === 'phone' ? formData.phoneNumber : formData.email
+      registeredUsers[key] = {
         fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        password: formData.password,
+        phoneNumber: formData.phoneNumber || "",
         email: formData.email || "",
+        password: formData.password,
+        registrationType: registrationType,
       }
       localStorage.setItem("registered_users", JSON.stringify(registeredUsers))
 
@@ -73,8 +85,9 @@ export default function RegisterPage() {
 
   const isFormValid = () =>
     formData.fullName.trim() &&
-    formData.phoneNumber.trim() &&
-    /^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, "")) &&
+    (registrationType === 'phone'
+      ? formData.phoneNumber.trim() && /^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, ""))
+      : formData.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) &&
     formData.password.trim().length >= 6 &&
     formData.password === formData.confirmPassword
 
@@ -98,7 +111,7 @@ export default function RegisterPage() {
             </p>
             <button
               onClick={handleSuccessPopupClose}
-              className="w-full py-3 bg-[#669BBC] hover:bg-[#5a87a8] text-white font-bold rounded-lg transition-all"
+              className="w-full py-3 bg-[#669BBC] hover:bg-[#5a87a8] text-white font-bold rounded-lg transition-all cursor-pointer"
             >
               Continue to Login
             </button>
@@ -150,46 +163,87 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-[#003d5c] font-medium mb-2 text-sm">Phone Number</label>
-              <input
-                type="text"
-                name="phoneNumber"
-                required
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
-                  errors.phoneNumber ? "border-red-500" : "border-[#e8d5c4]"
-                }`}
-                placeholder="Enter your Phone Number"
-              />
-              {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+              <label className="block text-[#003d5c] font-medium mb-3 text-sm">Sign up with:</label>
+              <div className="flex gap-3 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setRegistrationType('phone')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+                    registrationType === 'phone'
+                      ? 'bg-[#669BBC] text-white'
+                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                  }`}
+                >
+                  Phone Number
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegistrationType('email')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+                    registrationType === 'email'
+                      ? 'bg-[#669BBC] text-white'
+                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                  }`}
+                >
+                  Email
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-[#003d5c] font-medium mb-2 text-sm">Email (Optional)</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all"
-                placeholder="Enter your Email (optional)"
-              />
-            </div>
+            {registrationType === 'phone' ? (
+              <div>
+                <label className="block text-[#003d5c] font-medium mb-2 text-sm">Phone Number</label>
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.phoneNumber ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Enter your Phone Number"
+                />
+                {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+              </div>
+            ) : (
+              <div>
+                <label className="block text-[#003d5c] font-medium mb-2 text-sm">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.email ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Enter your Email"
+                />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              </div>
+            )}
 
             <div>
               <label className="block text-[#003d5c] font-medium mb-2 text-sm">Password</label>
-              <input
-                type="password"
-                name="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
-                  errors.password ? "border-red-500" : "border-[#e8d5c4]"
-                }`}
-                placeholder="Enter your Password"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 pr-10 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.password ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Enter your Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-[#003d5c] cursor-pointer"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {errors.password ? (
                 <p className="text-red-500 text-xs mt-1">{errors.password}</p>
               ) : (
@@ -199,24 +253,33 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-[#003d5c] font-medium mb-2 text-sm">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
-                  errors.confirmPassword ? "border-red-500" : "border-[#e8d5c4]"
-                }`}
-                placeholder="Confirm your Password"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 pr-10 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.confirmPassword ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Confirm your Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-3 text-[#003d5c] cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
             </div>
 
             <button
               type="submit"
               disabled={!isFormValid() || loading}
-              className={`w-full py-3 mt-4 font-bold text-base rounded-lg transition-all duration-300 ${
+              className={`w-full py-3 mt-4 font-bold text-base rounded-lg transition-all duration-300 cursor-pointer ${
                 !isFormValid() || loading
                   ? "bg-gray-400 text-white cursor-not-allowed"
                   : "bg-[#669BBC] hover:bg-[#5a87a8] text-white"

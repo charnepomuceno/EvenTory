@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from 'next/navigation'
 import { useState } from "react"
 import { Mochiy_Pop_One, Archivo } from 'next/font/google'
+import { Eye, EyeOff } from 'lucide-react'
 
 const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
@@ -16,15 +17,23 @@ const getRegisteredUsers = () => {
 
 export default function LoginPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({ phoneNumber: "", password: "" })
+  const [loginType, setLoginType] = useState<'phone' | 'email'>('phone')
+  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({ credential: "", password: "" })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required"
-    else if (!/^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, "")))
-      newErrors.phoneNumber = "Please enter a valid phone number"
+    if (!formData.credential.trim()) {
+      newErrors.credential = `${loginType === 'phone' ? 'Phone number' : 'Email'} is required`
+    } else if (loginType === 'phone') {
+      if (!/^\d{10,}$/.test(formData.credential.replace(/\D/g, "")))
+        newErrors.credential = "Please enter a valid phone number"
+    } else {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.credential))
+        newErrors.credential = "Please enter a valid email"
+    }
 
     if (!formData.password.trim()) newErrors.password = "Password is required"
     else if (formData.password.length < 6)
@@ -45,15 +54,29 @@ export default function LoginPage() {
     if (!validateForm()) return
 
     const registeredUsers = getRegisteredUsers()
-    const isAdmin = formData.phoneNumber === "0912345678" && formData.password === "Admin123"
-    const isRegistered = registeredUsers[formData.phoneNumber]
+    let userRecord = null
+    let userKey = null
+
+    if (loginType === 'phone') {
+      userKey = formData.credential
+      userRecord = registeredUsers[userKey]
+    } else {
+      // Search by email
+      userKey = Object.keys(registeredUsers).find(
+        key => registeredUsers[key].email === formData.credential
+      )
+      userRecord = userKey ? registeredUsers[userKey] : null
+    }
+
+    const isAdmin = formData.credential === "0912345678" && formData.password === "Admin123"
+    const isRegistered = userRecord !== null
 
     if (!isAdmin && !isRegistered) {
-      setErrors({ phoneNumber: "User not registered. Please register first." })
+      setErrors({ credential: "User not registered. Please register first." })
       return
     }
 
-    if (isRegistered && isRegistered.password !== formData.password) {
+    if (isRegistered && userRecord.password !== formData.password) {
       setErrors({ password: "Incorrect password" })
       return
     }
@@ -62,12 +85,12 @@ export default function LoginPage() {
     setTimeout(() => {
       setLoading(false)
       if (isAdmin) {
-        router.push("/admin")
+        router.push("/admin-dashboard")
       } else {
         localStorage.setItem("current_user", JSON.stringify({
-          phoneNumber: formData.phoneNumber,
-          fullName: registeredUsers[formData.phoneNumber]?.fullName || "",
-          email: registeredUsers[formData.phoneNumber]?.email || "",
+          phoneNumber: userRecord.phoneNumber || "",
+          fullName: userRecord.fullName || "",
+          email: userRecord.email || "",
         }))
         router.push("/home")
       }
@@ -75,8 +98,10 @@ export default function LoginPage() {
   }
 
   const isFormValid = () =>
-    formData.phoneNumber.trim() &&
-    /^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, "")) &&
+    formData.credential.trim() &&
+    (loginType === 'phone'
+      ? /^\d{10,}$/.test(formData.credential.replace(/\D/g, ""))
+      : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.credential)) &&
     formData.password.trim().length >= 6
 
   return (
@@ -109,34 +134,73 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[#003d5c] font-medium mb-2 text-sm">Phone Number</label>
+              <label className="block text-[#003d5c] font-medium mb-3 text-sm">Login with:</label>
+              <div className="flex gap-3 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setLoginType('phone')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+                    loginType === 'phone'
+                      ? 'bg-[#669BBC] text-white'
+                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                  }`}
+                >
+                  Phone Number
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginType('email')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+                    loginType === 'email'
+                      ? 'bg-[#669BBC] text-white'
+                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                  }`}
+                >
+                  Email
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[#003d5c] font-medium mb-2 text-sm">
+                {loginType === 'phone' ? 'Phone Number' : 'Email'}
+              </label>
               <input
                 type="text"
-                name="phoneNumber"
+                name="credential"
                 required
-                value={formData.phoneNumber}
+                value={formData.credential}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
-                  errors.phoneNumber ? "border-red-500" : "border-[#e8d5c4]"
+                  errors.credential ? "border-red-500" : "border-[#e8d5c4]"
                 }`}
-                placeholder="Enter your Phone Number"
+                placeholder={loginType === 'phone' ? "Enter your Phone Number" : "Enter your Email"}
               />
-              {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+              {errors.credential && <p className="text-red-500 text-xs mt-1">{errors.credential}</p>}
             </div>
 
             <div>
               <label className="block text-[#003d5c] font-medium mb-2 text-sm">Password</label>
-              <input
-                type="password"
-                name="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
-                  errors.password ? "border-red-500" : "border-[#e8d5c4]"
-                }`}
-                placeholder="Enter your Password"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 pr-10 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.password ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Enter your Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-[#003d5c] cursor-pointer"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {errors.password ? (
                 <p className="text-red-500 text-xs mt-1">{errors.password}</p>
               ) : (
@@ -152,7 +216,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={!isFormValid() || loading}
-              className={`w-full py-3 mt-4 font-bold text-base rounded-lg transition-all duration-300 ${
+              className={`w-full py-3 mt-4 font-bold text-base rounded-lg transition-all duration-300 cursor-pointer ${
                 !isFormValid() || loading
                   ? "bg-gray-400 text-white cursor-not-allowed"
                   : "bg-[#669BBC] hover:bg-[#5a87a8] text-white"
@@ -165,7 +229,7 @@ export default function LoginPage() {
           <p className="text-center text-slate-600 text-xs md:text-sm mt-4">
             {"Don't have an account?"}
             <Link href="/register" className="text-[#669BBC] font-semibold hover:underline">
-              Sign up
+              {" "}Sign up
             </Link>
           </p>
         </div>
