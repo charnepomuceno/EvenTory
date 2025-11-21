@@ -5,7 +5,7 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname } from 'next/navigation'
 
 export default function FeedbackPage() {
   const pathname = usePathname()
@@ -15,6 +15,11 @@ export default function FeedbackPage() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
   const [isScrolled, setIsScrolled] = useState(false)
+  const [personalDetails, setPersonalDetails] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+  })
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +27,18 @@ export default function FeedbackPage() {
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("current_user")
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      setPersonalDetails({
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        email: userData.email || "",
+      })
+    }
   }, [])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -142,6 +159,31 @@ export default function FeedbackPage() {
       <section className="pt-2 pb-20 md:pt-4 md:pb-28 bg-background">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
+            className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-8 opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <div className="mb-6">
+              <h2 className="text-2xl md:text-3xl font-mochiy text-primary mb-2">Your Information</h2>
+              <p className="text-foreground/70 text-base font-archivo">Personal details from your profile</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-foreground/60 text-sm font-archivo mb-1">Full Name</p>
+                <p className="text-primary text-lg font-archivo font-semibold">{personalDetails.fullName || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-foreground/60 text-sm font-archivo mb-1">Phone</p>
+                <p className="text-primary text-lg font-archivo font-semibold">{personalDetails.phone || "Not set"}</p>
+              </div>
+              <div>
+                <p className="text-foreground/60 text-sm font-archivo mb-1">Email</p>
+                <p className="text-primary text-lg font-archivo font-semibold">{personalDetails.email || "Not set"}</p>
+              </div>
+            </div>
+          </div>
+
+          <div
             className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-16 md:mb-24 opacity-0 animate-fade-in"
             style={{ animationDelay: "0.5s" }}
           >
@@ -163,7 +205,7 @@ export default function FeedbackPage() {
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
                       onClick={() => setRating(star)}
-                      className="transition-transform duration-200 hover:scale-110"
+                      className="transition-transform duration-200 hover:scale-110 cursor-pointer"
                     >
                       <span
                         className={`text-5xl md:text-6xl transition-all duration-200 ${

@@ -5,8 +5,8 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import { Calendar } from "lucide-react"
+import { usePathname, useRouter } from 'next/navigation'
+import { Calendar } from 'lucide-react'
 
 export default function BookPage() {
   const pathname = usePathname()
@@ -18,7 +18,7 @@ export default function BookPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   const [showCalendar, setShowCalendar] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9)) // October 2025
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 9))
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<number | null>(null)
 
   const dateStatuses = {
@@ -47,14 +47,14 @@ export default function BookPage() {
     }
     window.addEventListener("scroll", handleScroll)
 
-    const savedProfile = localStorage.getItem("userProfile")
-    if (savedProfile) {
-      const profile = JSON.parse(savedProfile)
+    const storedUser = localStorage.getItem("current_user")
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
       setFormData((prev) => ({
         ...prev,
-        fullName: profile.fullName || "",
-        email: profile.email || "",
-        phone: profile.phone || "",
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        email: userData.email || "",
       }))
     }
 
@@ -71,15 +71,6 @@ export default function BookPage() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  useEffect(() => {
-    if (showSuccessPopup) {
-      const timer = setTimeout(() => {
-        setShowSuccessPopup(false)
-        router.push("/profile")
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [showSuccessPopup, router])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -159,7 +150,6 @@ export default function BookPage() {
     e.preventDefault()
     setError("")
 
-    // Validation
     if (!formData.fullName.trim()) {
       setError("Full Name is required")
       return
@@ -204,7 +194,6 @@ export default function BookPage() {
     setIsSubmitting(true)
     setTimeout(() => {
       setIsSubmitting(false)
-      // Save booking request to localStorage for profile page
       const bookingRequest = {
         id: Date.now(),
         ...formData,
@@ -230,11 +219,21 @@ export default function BookPage() {
     }, 1000)
   }
 
+  useEffect(() => {
+    if (showSuccessPopup) {
+      const timer = setTimeout(() => {
+        setShowSuccessPopup(false)
+        router.push("/profile")
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showSuccessPopup, router])
+
   const isActive = (href: string) => pathname === href
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Navbar */}
+      {/* ... existing navbar code ... */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
@@ -374,7 +373,6 @@ export default function BookPage() {
                 <h3 className="text-xl font-mochiy text-primary mb-6">Contact Information</h3>
 
                 <div className="space-y-6">
-                  {/* Full Name */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Full Name <span className="text-destructive">*</span>
@@ -389,7 +387,6 @@ export default function BookPage() {
                     />
                   </div>
 
-                  {/* Email and Phone */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-foreground font-archivo text-sm mb-2">
@@ -421,12 +418,11 @@ export default function BookPage() {
                 </div>
               </div>
 
-              {/* Event Information Section */}
+              {/* ... rest of form sections ... */}
               <div>
                 <h3 className="text-xl font-mochiy text-primary mb-6">Event Information</h3>
 
                 <div className="space-y-6">
-                  {/* Event Type and Number of Guests */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-foreground font-archivo text-sm mb-2">
@@ -479,7 +475,6 @@ export default function BookPage() {
 
                       {showCalendar && (
                         <div className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-xl p-3 z-50 w-full md:w-80">
-                          {/* Month Navigation */}
                           <div className="flex items-center justify-between mb-3">
                             <button
                               type="button"
@@ -498,7 +493,6 @@ export default function BookPage() {
                             </button>
                           </div>
 
-                          {/* Weekdays */}
                           <div className="grid grid-cols-7 text-center mb-1.5 font-semibold text-foreground/60 font-archivo text-xs">
                             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                               <div key={day} className="py-1">
@@ -507,7 +501,6 @@ export default function BookPage() {
                             ))}
                           </div>
 
-                          {/* Calendar Days */}
                           <div className="grid grid-cols-7 gap-0.5 text-xs mb-2">
                             {emptyDays.map((_, i) => (
                               <div key={`empty-${i}`} className="h-7"></div>
@@ -525,7 +518,6 @@ export default function BookPage() {
                             ))}
                           </div>
 
-                          {/* Legend */}
                           <div className="flex justify-center gap-2 text-xs text-foreground/70 font-archivo mb-2">
                             <div className="flex items-center gap-1">
                               <div className="w-2.5 h-2.5 bg-green-100 rounded"></div>{" "}
@@ -541,7 +533,6 @@ export default function BookPage() {
                             </div>
                           </div>
 
-                          {/* Close button */}
                           <button
                             type="button"
                             onClick={() => setShowCalendar(false)}
@@ -554,7 +545,6 @@ export default function BookPage() {
                     </div>
                   </div>
 
-                  {/* Event Location */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Event Location <span className="text-destructive">*</span>
@@ -569,7 +559,6 @@ export default function BookPage() {
                     />
                   </div>
 
-                  {/* Preferred Package */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Preferred Package <span className="text-destructive">*</span>
@@ -584,7 +573,6 @@ export default function BookPage() {
                     />
                   </div>
 
-                  {/* Special Requests */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Special Requests or Dietary Requirements
@@ -601,14 +589,12 @@ export default function BookPage() {
                 </div>
               </div>
 
-              {/* Error Message */}
               {error && (
                 <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
                   <p className="text-destructive font-archivo text-sm">{error}</p>
                 </div>
               )}
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -617,7 +603,6 @@ export default function BookPage() {
                 {isSubmitting ? "Submitting..." : "Submit Booking Request"}
               </button>
 
-              {/* Footer Note */}
               <p className="text-center text-foreground/70 text-sm font-archivo">
                 <span className="text-destructive">*</span> Required fields. We will contact you within 24 hours to
                 confirm your booking.
@@ -646,7 +631,6 @@ export default function BookPage() {
         </div>
       )}
 
-      {/* Footer */}
       <footer className="bg-accent text-primary-foreground py-16 md:py-20 font-archivo">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-12 text-center md:text-left">
