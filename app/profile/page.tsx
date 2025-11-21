@@ -83,7 +83,6 @@ export default function ProfilePage() {
         return
       }
 
-      // Update localStorage with updated data
       localStorage.setItem(
         "current_user",
         JSON.stringify({
