@@ -61,7 +61,6 @@ export default function LoginPage() {
       userKey = formData.credential
       userRecord = registeredUsers[userKey]
     } else {
-      // Search by email
       userKey = Object.keys(registeredUsers).find(
         key => registeredUsers[key].email === formData.credential
       )

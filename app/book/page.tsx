@@ -233,7 +233,6 @@ export default function BookPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* ... existing navbar code ... */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
@@ -306,7 +305,6 @@ export default function BookPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="relative w-full pt-20 md:pt-24 pb-2 md:pb-4 overflow-hidden bg-background">
         <div className="absolute inset-0 z-0">
           <Image src="/images/background.png" alt="Background" fill className="object-cover" priority />
@@ -418,7 +416,6 @@ export default function BookPage() {
                 </div>
               </div>
 
-              {/* ... rest of form sections ... */}
               <div>
                 <h3 className="text-xl font-mochiy text-primary mb-6">Event Information</h3>
 

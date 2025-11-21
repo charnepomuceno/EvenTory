@@ -63,7 +63,6 @@ export default function ProfilePage() {
     if (storedUser) {
       const userData = JSON.parse(storedUser)
       
-      // Update registered_users database with new data
       const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "{}")
       if (registeredUsers[userData.phoneNumber]) {
         registeredUsers[userData.phoneNumber] = {
@@ -74,7 +73,6 @@ export default function ProfilePage() {
         localStorage.setItem("registered_users", JSON.stringify(registeredUsers))
       }
       
-      // Update current_user with new data
       localStorage.setItem("current_user", JSON.stringify({
         phoneNumber: userData.phoneNumber,
         fullName: editFormData.fullName,

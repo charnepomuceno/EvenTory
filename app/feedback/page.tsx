@@ -158,38 +158,42 @@ export default function FeedbackPage() {
 
       <section className="pt-2 pb-20 md:pt-4 md:pb-28 bg-background">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-8 opacity-0 animate-fade-in"
-            style={{ animationDelay: "0.4s" }}
-          >
-            <div className="mb-6">
-              <h2 className="text-2xl md:text-3xl font-mochiy text-primary mb-2">Your Information</h2>
-              <p className="text-foreground/70 text-base font-archivo">Personal details from your profile</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-foreground/60 text-sm font-archivo mb-1">Full Name</p>
-                <p className="text-primary text-lg font-archivo font-semibold">{personalDetails.fullName || "Not set"}</p>
-              </div>
-              <div>
-                <p className="text-foreground/60 text-sm font-archivo mb-1">Phone</p>
-                <p className="text-primary text-lg font-archivo font-semibold">{personalDetails.phone || "Not set"}</p>
-              </div>
-              <div>
-                <p className="text-foreground/60 text-sm font-archivo mb-1">Email</p>
-                <p className="text-primary text-lg font-archivo font-semibold">{personalDetails.email || "Not set"}</p>
-              </div>
-            </div>
-          </div>
 
           <div
             className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-16 md:mb-24 opacity-0 animate-fade-in"
             style={{ animationDelay: "0.5s" }}
           >
+
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-mochiy text-primary mb-2">Rate Your Experience</h2>
               <p className="text-foreground/70 text-base font-archivo">Your feedback helps us serve you better</p>
+            </div>
+
+            <div className="mb-10">
+              <h3 className="text-xl md:text-2xl font-mochiy text-primary mb-2">Your Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <p className="text-foreground/60 text-sm mb-1">Full Name</p>
+                  <p className="text-primary text-lg font-semibold truncate overflow-hidden">
+                    {personalDetails.fullName || "Not set"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-foreground/60 text-sm mb-1">Email</p>
+                  <p className="text-primary text-lg font-semibold truncate overflow-hidden">
+                    {personalDetails.email || "Not set"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-foreground/60 text-sm mb-1">Phone</p>
+                  <p className="text-primary text-lg font-semibold">
+                    {personalDetails.phone || "Not set"}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -264,6 +268,7 @@ export default function FeedbackPage() {
             </div>
 
             <div className="space-y-6 opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+              {/* sample reviews */}
               <div className="bg-card rounded-lg p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow border border-border/50">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                   <div>
@@ -322,6 +327,7 @@ export default function FeedbackPage() {
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
@@ -344,26 +350,10 @@ export default function FeedbackPage() {
             <div>
               <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/menu" className="hover:text-primary-foreground/70 transition">
-                    Menu
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/packages" className="hover:text-primary-foreground/70 transition">
-                    Packages
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/book" className="hover:text-primary-foreground/70 transition">
-                    Book Now
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/feedback" className="hover:text-primary-foreground/70 transition">
-                    Feedback
-                  </Link>
-                </li>
+                <li><Link href="/menu">Menu</Link></li>
+                <li><Link href="/packages">Packages</Link></li>
+                <li><Link href="/book">Book Now</Link></li>
+                <li><Link href="/feedback">Feedback</Link></li>
               </ul>
             </div>
 
@@ -379,7 +369,9 @@ export default function FeedbackPage() {
 
           <hr className="border-primary-foreground/20 mb-6" />
 
-          <div className="text-center text-xs text-primary-foreground/70">© 2025 EvenTory. All rights reserved.</div>
+          <div className="text-center text-xs text-primary-foreground/70">
+            © 2025 EvenTory. All rights reserved.
+          </div>
         </div>
       </footer>
     </main>
