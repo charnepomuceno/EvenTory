@@ -1,17 +1,19 @@
 "use client"
 
+import type React from "react"
+
 import Link from "next/link"
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Mochiy_Pop_One, Archivo } from 'next/font/google'
-import { Eye, EyeOff } from 'lucide-react'
+import { Mochiy_Pop_One, Archivo } from "next/font/google"
+import { Eye, EyeOff } from "lucide-react"
 
 const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [registrationType, setRegistrationType] = useState<'phone' | 'email'>('phone')
+  const [registrationType, setRegistrationType] = useState<"phone" | "email">("phone")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,21 +31,19 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {}
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required"
 
-    if (registrationType === 'phone') {
+    if (registrationType === "phone") {
       if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required"
       else if (!/^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, "")))
         newErrors.phoneNumber = "Please enter a valid phone number"
     } else {
       if (!formData.email.trim()) newErrors.email = "Email is required"
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-        newErrors.email = "Please enter a valid email"
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Please enter a valid email"
     }
 
     if (!formData.password.trim()) newErrors.password = "Password is required"
     else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
 
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match"
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -61,21 +61,33 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    setTimeout(() => {
-      const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "{}")
-      const key = registrationType === 'phone' ? formData.phoneNumber : formData.email
-      registeredUsers[key] = {
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber || "",
-        email: formData.email || "",
-        password: formData.password,
-        registrationType: registrationType,
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          phoneNumber: formData.phoneNumber || "",
+          email: formData.email || "",
+          password: formData.password,
+          registrationType,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrors({ submit: data.error })
+        setLoading(false)
+        return
       }
-      localStorage.setItem("registered_users", JSON.stringify(registeredUsers))
 
       setLoading(false)
       setShowSuccessPopup(true)
-    }, 1500)
+    } catch (error) {
+      setErrors({ submit: "Registration failed" })
+      setLoading(false)
+    }
   }
 
   const handleSuccessPopupClose = () => {
@@ -85,7 +97,7 @@ export default function RegisterPage() {
 
   const isFormValid = () =>
     formData.fullName.trim() &&
-    (registrationType === 'phone'
+    (registrationType === "phone"
       ? formData.phoneNumber.trim() && /^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, ""))
       : formData.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) &&
     formData.password.trim().length >= 6 &&
@@ -103,9 +115,7 @@ export default function RegisterPage() {
                 </svg>
               </div>
             </div>
-            <h2 className={`text-2xl font-bold text-[#003d5c] mb-2 ${mochiyPopOne.className}`}>
-              Account Created!
-            </h2>
+            <h2 className={`text-2xl font-bold text-[#003d5c] mb-2 ${mochiyPopOne.className}`}>Account Created!</h2>
             <p className="text-slate-600 text-sm mb-6">
               Your account has been successfully created. You can now log in with your credentials.
             </p>
@@ -140,9 +150,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md md:max-w-lg bg-white/90 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 border border-white/30">
           <div className="mb-8 md:mb-10 text-center">
             <img src="/images/eventory.png" alt="Eventory Logo" className="h-16 md:h-20 mx-auto mb-3" />
-            <p className="text-slate-500 text-sm md:text-base font-medium">
-              Quality Filipino and Bicolano Catering
-            </p>
+            <p className="text-slate-500 text-sm md:text-base font-medium">Quality Filipino and Bicolano Catering</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -167,22 +175,22 @@ export default function RegisterPage() {
               <div className="flex gap-3 mb-4">
                 <button
                   type="button"
-                  onClick={() => setRegistrationType('phone')}
+                  onClick={() => setRegistrationType("phone")}
                   className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
-                    registrationType === 'phone'
-                      ? 'bg-[#669BBC] text-white'
-                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                    registrationType === "phone"
+                      ? "bg-[#669BBC] text-white"
+                      : "bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]"
                   }`}
                 >
                   Phone Number
                 </button>
                 <button
                   type="button"
-                  onClick={() => setRegistrationType('email')}
+                  onClick={() => setRegistrationType("email")}
                   className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
-                    registrationType === 'email'
-                      ? 'bg-[#669BBC] text-white'
-                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                    registrationType === "email"
+                      ? "bg-[#669BBC] text-white"
+                      : "bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]"
                   }`}
                 >
                   Email
@@ -190,7 +198,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {registrationType === 'phone' ? (
+            {registrationType === "phone" ? (
               <div>
                 <label className="block text-[#003d5c] font-medium mb-2 text-sm">Phone Number</label>
                 <input
@@ -287,6 +295,7 @@ export default function RegisterPage() {
             >
               {loading ? "Creating account..." : "Sign Up"}
             </button>
+            {errors.submit && <p className="text-red-500 text-xs mt-1">{errors.submit}</p>}
           </form>
 
           <p className="text-center text-slate-600 text-xs md:text-sm mt-4">

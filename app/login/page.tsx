@@ -1,23 +1,19 @@
 "use client"
 
+import type React from "react"
+
 import Link from "next/link"
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Mochiy_Pop_One, Archivo } from 'next/font/google'
-import { Eye, EyeOff } from 'lucide-react'
+import { Mochiy_Pop_One, Archivo } from "next/font/google"
+import { Eye, EyeOff } from "lucide-react"
 
 const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
-const getRegisteredUsers = () => {
-  if (typeof window === "undefined") return {}
-  const users = localStorage.getItem("registered_users")
-  return users ? JSON.parse(users) : {}
-}
-
 export default function LoginPage() {
   const router = useRouter()
-  const [loginType, setLoginType] = useState<'phone' | 'email'>('phone')
+  const [loginType, setLoginType] = useState<"phone" | "email">("phone")
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({ credential: "", password: "" })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -26,18 +22,16 @@ export default function LoginPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     if (!formData.credential.trim()) {
-      newErrors.credential = `${loginType === 'phone' ? 'Phone number' : 'Email'} is required`
-    } else if (loginType === 'phone') {
+      newErrors.credential = `${loginType === "phone" ? "Phone number" : "Email"} is required`
+    } else if (loginType === "phone") {
       if (!/^\d{10,}$/.test(formData.credential.replace(/\D/g, "")))
         newErrors.credential = "Please enter a valid phone number"
     } else {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.credential))
-        newErrors.credential = "Please enter a valid email"
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.credential)) newErrors.credential = "Please enter a valid email"
     }
 
     if (!formData.password.trim()) newErrors.password = "Password is required"
-    else if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters"
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -53,52 +47,47 @@ export default function LoginPage() {
     e.preventDefault()
     if (!validateForm()) return
 
-    const registeredUsers = getRegisteredUsers()
-    let userRecord = null
-    let userKey = null
-
-    if (loginType === 'phone') {
-      userKey = formData.credential
-      userRecord = registeredUsers[userKey]
-    } else {
-      userKey = Object.keys(registeredUsers).find(
-        key => registeredUsers[key].email === formData.credential
-      )
-      userRecord = userKey ? registeredUsers[userKey] : null
-    }
-
-    const isAdmin = formData.credential === "0912345678" && formData.password === "Admin123"
-    const isRegistered = userRecord !== null
-
-    if (!isAdmin && !isRegistered) {
-      setErrors({ credential: "User not registered. Please register first." })
-      return
-    }
-
-    if (isRegistered && userRecord.password !== formData.password) {
-      setErrors({ password: "Incorrect password" })
-      return
-    }
-
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      if (isAdmin) {
-        router.push("/admin-dashboard")
-      } else {
-        localStorage.setItem("current_user", JSON.stringify({
-          phoneNumber: userRecord.phoneNumber || "",
-          fullName: userRecord.fullName || "",
-          email: userRecord.email || "",
-        }))
-        router.push("/home")
+
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          credential: formData.credential,
+          password: formData.password,
+          loginType,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrors({ credential: data.error })
+        setLoading(false)
+        return
       }
-    }, 2000)
+
+      setLoading(false)
+      localStorage.setItem(
+        "current_user",
+        JSON.stringify({
+          id: data.user.id,
+          phoneNumber: data.user.phoneNumber || "",
+          fullName: data.user.fullName || "",
+          email: data.user.email || "",
+        }),
+      )
+      router.push("/home")
+    } catch (error) {
+      setErrors({ credential: "Login failed" })
+      setLoading(false)
+    }
   }
 
   const isFormValid = () =>
     formData.credential.trim() &&
-    (loginType === 'phone'
+    (loginType === "phone"
       ? /^\d{10,}$/.test(formData.credential.replace(/\D/g, ""))
       : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.credential)) &&
     formData.password.trim().length >= 6
@@ -126,9 +115,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md md:max-w-lg bg-white/90 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 border border-white/30">
           <div className="mb-8 md:mb-10 text-center">
             <img src="/images/eventory.png" alt="Eventory Logo" className="h-16 md:h-20 mx-auto mb-3" />
-            <p className="text-slate-500 text-sm md:text-base font-medium">
-              Quality Filipino and Bicolano Catering
-            </p>
+            <p className="text-slate-500 text-sm md:text-base font-medium">Quality Filipino and Bicolano Catering</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -137,22 +124,22 @@ export default function LoginPage() {
               <div className="flex gap-3 mb-4">
                 <button
                   type="button"
-                  onClick={() => setLoginType('phone')}
+                  onClick={() => setLoginType("phone")}
                   className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
-                    loginType === 'phone'
-                      ? 'bg-[#669BBC] text-white'
-                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                    loginType === "phone"
+                      ? "bg-[#669BBC] text-white"
+                      : "bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]"
                   }`}
                 >
                   Phone Number
                 </button>
                 <button
                   type="button"
-                  onClick={() => setLoginType('email')}
+                  onClick={() => setLoginType("email")}
                   className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
-                    loginType === 'email'
-                      ? 'bg-[#669BBC] text-white'
-                      : 'bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]'
+                    loginType === "email"
+                      ? "bg-[#669BBC] text-white"
+                      : "bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]"
                   }`}
                 >
                   Email
@@ -162,7 +149,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-[#003d5c] font-medium mb-2 text-sm">
-                {loginType === 'phone' ? 'Phone Number' : 'Email'}
+                {loginType === "phone" ? "Phone Number" : "Email"}
               </label>
               <input
                 type="text"
@@ -173,7 +160,7 @@ export default function LoginPage() {
                 className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
                   errors.credential ? "border-red-500" : "border-[#e8d5c4]"
                 }`}
-                placeholder={loginType === 'phone' ? "Enter your Phone Number" : "Enter your Email"}
+                placeholder={loginType === "phone" ? "Enter your Phone Number" : "Enter your Email"}
               />
               {errors.credential && <p className="text-red-500 text-xs mt-1">{errors.credential}</p>}
             </div>
@@ -228,7 +215,8 @@ export default function LoginPage() {
           <p className="text-center text-slate-600 text-xs md:text-sm mt-4">
             {"Don't have an account?"}
             <Link href="/register" className="text-[#669BBC] font-semibold hover:underline">
-              {" "}Sign up
+              {" "}
+              Sign up
             </Link>
           </p>
         </div>

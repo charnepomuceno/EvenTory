@@ -2,9 +2,9 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
-import { MapPin, Users, Calendar, LogOut, X } from 'lucide-react'
+import { MapPin, Users, Calendar, LogOut, X } from "lucide-react"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -30,8 +30,8 @@ export default function ProfilePage() {
     if (storedUser) {
       const userData = JSON.parse(storedUser)
       const today = new Date()
-      const memberSince = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-      
+      const memberSince = today.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+
       setProfileData({
         fullName: userData.fullName || "",
         phone: userData.phoneNumber || "",
@@ -58,32 +58,50 @@ export default function ProfilePage() {
     setIsEditDialogOpen(true)
   }
 
-  const handleSaveProfile = () => {
-    const storedUser = localStorage.getItem("current_user")
-    if (storedUser) {
+  const handleSaveProfile = async () => {
+    try {
+      const storedUser = localStorage.getItem("current_user")
+      if (!storedUser) return
+
       const userData = JSON.parse(storedUser)
-      
-      const registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "{}")
-      if (registeredUsers[userData.phoneNumber]) {
-        registeredUsers[userData.phoneNumber] = {
-          ...registeredUsers[userData.phoneNumber],
+
+      const response = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: userData.id,
           fullName: editFormData.fullName,
           email: editFormData.email,
-        }
-        localStorage.setItem("registered_users", JSON.stringify(registeredUsers))
-      }
-      
-      localStorage.setItem("current_user", JSON.stringify({
-        phoneNumber: userData.phoneNumber,
-        fullName: editFormData.fullName,
-        email: editFormData.email,
-      }))
-    }
+          phoneNumber: editFormData.phone,
+        }),
+      })
 
-    setProfileData(editFormData)
-    setIsEditDialogOpen(false)
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setShowSuccessMessage(false)
+        return
+      }
+
+      // Update localStorage with updated data
+      localStorage.setItem(
+        "current_user",
+        JSON.stringify({
+          id: data.user.id,
+          phoneNumber: data.user.phoneNumber || "",
+          fullName: data.user.fullName || "",
+          email: data.user.email || "",
+        }),
+      )
+
+      setProfileData(editFormData)
+      setIsEditDialogOpen(false)
+      setShowSuccessMessage(true)
+      setTimeout(() => setShowSuccessMessage(false), 3000)
+    } catch (error) {
+      console.error("Profile update error:", error)
+      setIsEditDialogOpen(false)
+    }
   }
 
   const handleLogout = () => {
@@ -179,7 +197,7 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-background">
-            <header
+      <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
         }`}
