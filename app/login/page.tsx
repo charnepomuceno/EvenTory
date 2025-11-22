@@ -54,7 +54,7 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          credential: formData.credential,
+          credential: formData.credential.trim(),
           password: formData.password,
           loginType,
         }),

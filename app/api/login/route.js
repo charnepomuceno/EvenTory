@@ -16,9 +16,9 @@ export async function POST(request) {
 
     let user
     if (loginType === "phone") {
-      user = await User.findOne({ phoneNumber: credential })
+      user = await User.findOne({ phoneNumber: credential.trim() })
     } else {
-      user = await User.findOne({ email: credential })
+      user = await User.findOne({ email: credential.trim() })
     }
 
     if (!user) {

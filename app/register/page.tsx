@@ -66,9 +66,9 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: formData.fullName,
-          phoneNumber: formData.phoneNumber || "",
-          email: formData.email || "",
+          fullName: formData.fullName.trim(),
+          phoneNumber: registrationType === "phone" ? formData.phoneNumber.trim() : null,
+          email: registrationType === "email" ? formData.email.trim() : null,
           password: formData.password,
           registrationType,
         }),

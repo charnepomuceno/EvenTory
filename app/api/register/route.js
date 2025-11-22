@@ -15,18 +15,18 @@ export async function POST(request) {
     }
 
     if (registrationType === "phone") {
-      if (!phoneNumber) {
+      if (!phoneNumber || phoneNumber.trim() === "") {
         return NextResponse.json({ error: "Phone number is required" }, { status: 400 })
       }
-      const existingUser = await User.findOne({ phoneNumber })
+      const existingUser = await User.findOne({ phoneNumber: phoneNumber.trim() })
       if (existingUser) {
         return NextResponse.json({ error: "Phone number already registered" }, { status: 400 })
       }
     } else {
-      if (!email) {
+      if (!email || email.trim() === "") {
         return NextResponse.json({ error: "Email is required" }, { status: 400 })
       }
-      const existingUser = await User.findOne({ email })
+      const existingUser = await User.findOne({ email: email.trim() })
       if (existingUser) {
         return NextResponse.json({ error: "Email already registered" }, { status: 400 })
       }
@@ -35,9 +35,9 @@ export async function POST(request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const newUser = new User({
-      fullName,
-      phoneNumber: registrationType === "phone" ? phoneNumber : null,
-      email: registrationType === "email" ? email : null,
+      fullName: fullName.trim(),
+      phoneNumber: registrationType === "phone" ? phoneNumber.trim() : null,
+      email: registrationType === "email" ? email.trim() : null,
       password: hashedPassword,
       registrationType,
     })
