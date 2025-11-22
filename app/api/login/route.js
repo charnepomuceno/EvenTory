@@ -37,6 +37,7 @@ export async function POST(request) {
         phoneNumber: user.phoneNumber,
         email: user.email,
         registrationType: user.registrationType,
+        isAdmin: Boolean(user.isAdmin),
       },
     })
   } catch (error) {

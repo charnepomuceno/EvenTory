@@ -62,6 +62,12 @@ export default function LoginPage() {
 
       const data = await response.json()
 
+      if (Boolean(data.user.isAdmin)) {
+        router.push("/admin")
+      } else {
+        router.push("/home")
+      }
+      
       if (!response.ok) {
         setErrors({ credential: data.error })
         setLoading(false)
@@ -76,9 +82,9 @@ export default function LoginPage() {
           phoneNumber: data.user.phoneNumber || "",
           fullName: data.user.fullName || "",
           email: data.user.email || "",
+          isAdmin: Boolean(data.user.isAdmin),
         }),
       )
-      router.push("/home")
     } catch (error) {
       setErrors({ credential: "Login failed" })
       setLoading(false)
