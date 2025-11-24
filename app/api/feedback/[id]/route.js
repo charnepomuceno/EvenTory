@@ -5,8 +5,7 @@ import { NextResponse } from "next/server"
 export async function GET(request, { params }) {
   try {
     await dbConnect()
-    const { id } = await params
-    const feedback = await Feedback.findById(id)
+    const feedback = await Feedback.findById(params.id)
 
     if (!feedback) return NextResponse.json({ error: "Not found" }, { status: 404 })
     return NextResponse.json(feedback)
@@ -20,8 +19,7 @@ export async function PUT(request, { params }) {
     await dbConnect()
     const body = await request.json()
 
-    const { id } = await params
-    const feedback = await Feedback.findByIdAndUpdate(id, body, { new: true })
+    const feedback = await Feedback.findByIdAndUpdate(params.id, body, { new: true })
 
     if (!feedback) return NextResponse.json({ error: "Not found" }, { status: 404 })
     return NextResponse.json(feedback)
@@ -33,8 +31,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await dbConnect()
-    const { id } = await params
-    const feedback = await Feedback.findByIdAndDelete(id)
+    const feedback = await Feedback.findByIdAndDelete(params.id)
 
     if (!feedback) return NextResponse.json({ error: "Not found" }, { status: 404 })
     return NextResponse.json({ message: "Deleted successfully" })
