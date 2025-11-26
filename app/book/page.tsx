@@ -18,7 +18,7 @@ export default function BookPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   const [showCalendar, setShowCalendar] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9))
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<number | null>(null)
 
   const dateStatuses = {
