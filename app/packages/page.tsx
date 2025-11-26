@@ -16,6 +16,7 @@ interface Package {
   minPrice: number
   maxPrice: number
   inclusions: string[]
+  status?: string
 }
 
 interface MenuItem {
@@ -48,13 +49,14 @@ const apiPackageToUI = (p: any): Package => {
     id: p._id || String(Math.random()),
     name: p.name || "",
     badge: p.tier || p.status || "",
-    description: "",
+    description: p.description || "",
     guestRange: p.guests || "",
     mealCourses: "",
     priceRange: priceRange,
     minPrice: parseMin(priceRange),
     maxPrice: 0,
     inclusions: Array.isArray(p.items) ? p.items : [],
+    status: p.status || "Active",
   }
 }
 
@@ -103,6 +105,9 @@ export default function PackagesPage() {
 
     fetchAll()
   }, [])
+
+  // Filter to show only Active packages
+  const activePackagesData = packagesData.filter(p => p.status === 'Active')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -263,7 +268,7 @@ export default function PackagesPage() {
       <section className="pt-2 pb-20 md:pt-4 md:pb-28 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-            {packagesData.map((pkg, index) => (
+            {activePackagesData.map((pkg, index) => (
               <div
                 key={pkg.id}
                 className="bg-card rounded-2xl shadow-lg overflow-hidden opacity-0 animate-fade-in hover:shadow-xl transition-shadow duration-300"
@@ -272,7 +277,6 @@ export default function PackagesPage() {
                 {/* Package Content */}
                 <div className="p-6 md:p-8">
                   <h3 className="text-2xl font-mochiy text-primary mb-2">{pkg.name}</h3>
-                  <p className="text-foreground/70 text-sm font-archivo mb-4">{pkg.description}</p>
 
                   {/* Package Details */}
                   <div className="space-y-2 mb-6 text-sm font-archivo text-foreground/80">
@@ -280,10 +284,12 @@ export default function PackagesPage() {
                       <span className="text-accent">👥</span>
                       <span>{pkg.guestRange}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-accent">🍽️</span>
-                      <span>{pkg.mealCourses}</span>
-                    </div>
+                    {pkg.description && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-accent">📝</span>
+                        <span className="line-clamp-2">{pkg.description}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Price */}
