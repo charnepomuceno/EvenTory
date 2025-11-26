@@ -39,6 +39,7 @@ export default function BookPage() {
     eventLocation: "",
     preferredPackage: "",
     specialRequests: "",
+    paymentMethod: "",
   })
 
   useEffect(() => {
@@ -194,6 +195,10 @@ export default function BookPage() {
       setError("Preferred Package is required. Please select a package from the Packages page first.")
       return
     }
+    if (!formData.paymentMethod) {
+      setError("Payment Method is required")
+      return
+    }
 
     setIsSubmitting(true)
     setTimeout(() => {
@@ -219,6 +224,7 @@ export default function BookPage() {
         eventLocation: "",
         preferredPackage: "",
         specialRequests: "",
+        paymentMethod: "",
       })
     }, 1000)
   }
@@ -455,7 +461,7 @@ export default function BookPage() {
                         value={formData.numberOfGuests}
                         onChange={handleInputChange}
                         min="30"
-                        placeholder="Min. 30"
+                        placeholder="min. 30"
                         className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground placeholder:text-foreground/50 font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
                       />
                     </div>
@@ -587,6 +593,25 @@ export default function BookPage() {
                       className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground placeholder:text-foreground/50 font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none"
                       rows={5}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-foreground font-archivo text-sm mb-2">
+                      Payment Method <span className="text-destructive">*</span>
+                    </label>
+                    <select
+                      aria-label="Payment Method"
+                      name="paymentMethod"
+                      value={formData.paymentMethod}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
+                    >
+                      <option value="">Select payment method</option>
+                      <option value="credit-card">Credit Card</option>
+                      <option value="debit-card">Debit Card</option>
+                      <option value="bank-transfer">Bank Transfer</option>
+                      <option value="gcash">GCash</option>
+                    </select>
                   </div>
                 </div>
               </div>
