@@ -5,8 +5,8 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname, useRouter } from 'next/navigation'
-import { Calendar } from 'lucide-react'
+import { usePathname, useRouter } from "next/navigation"
+import { Calendar } from "lucide-react"
 
 export default function BookPage() {
   const pathname = usePathname()
@@ -70,7 +70,6 @@ export default function BookPage() {
 
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
-
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -176,6 +175,11 @@ export default function BookPage() {
     }
     if (!formData.numberOfGuests.trim()) {
       setError("Number of Guests is required")
+      return
+    }
+    const guestCount = Number.parseInt(formData.numberOfGuests, 10)
+    if (isNaN(guestCount) || guestCount < 30) {
+      setError("Number of Guests must be at least 30")
       return
     }
     if (!formData.eventDate) {
@@ -450,7 +454,8 @@ export default function BookPage() {
                         name="numberOfGuests"
                         value={formData.numberOfGuests}
                         onChange={handleInputChange}
-                        placeholder="e.g., 50"
+                        min="30"
+                        placeholder="Min. 30"
                         className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground placeholder:text-foreground/50 font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
                       />
                     </div>
