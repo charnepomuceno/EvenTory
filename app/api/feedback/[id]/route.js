@@ -18,9 +18,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await dbConnect()
+    const { id } = await params
     const body = await request.json()
 
-    const { id } = await params
     const feedback = await Feedback.findByIdAndUpdate(id, body, { new: true })
 
     if (!feedback) return NextResponse.json({ error: "Not found" }, { status: 404 })

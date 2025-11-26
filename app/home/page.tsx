@@ -69,7 +69,7 @@ function Header() {
 
           <div className="hidden md:block opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
             <Link href="/profile">
-              <button className="px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-base font-medium">
+              <button className="px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-base font-medium cursor-pointer">
                 Profile
               </button>
             </Link>
@@ -148,7 +148,7 @@ function Hero() {
 
           <Link href="#availability">
             <button
-              className={`px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 transition-all duration-1000 delay-500 ${
+              className={`px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 transition-all duration-1000 delay-500 cursor-pointer ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
@@ -165,26 +165,26 @@ function FeaturedPackages() {
   const packages = [
     {
       id: 1,
-      title: "Wedding Package",
-      description: "Make your special day unforgettable with our elegant wedding catering service.",
-      price: "₱35,000",
-      image: "/images/weddingpackage.png",
+      title: "Corporate Package",
+      description: "Simple, efficient meals and snacks tailored for business events.",
+      price: "₱250/head",
+      image: "/images/corporate.jpg",
       color: "text-destructive",
     },
     {
       id: 2,
-      title: "Birthday Package",
-      description: "Celebrate in style with our fun birthday party catering packages.",
-      price: "₱15,000",
-      image: "/images/bdaypackage.png",
+      title: "Buffet Package",
+      description: "Enjoy a wide selection of dishes where guests serve themselves.",
+      price: "₱400/head",
+      image: "/images/buffet.png",
       color: "text-destructive",
     },
     {
       id: 3,
-      title: "Corporate Package",
-      description: "Professional catering for your business events and corporate gatherings.",
-      price: "₱20,000",
-      image: "/images/corppackage.png",
+      title: "Premium Package",
+      description: "The complete solution: food, buffet setup, staff, and decorations.",
+      price: "₱600/head",
+      image: "/images/premium.png",
       color: "text-destructive",
     },
   ]
@@ -227,9 +227,11 @@ function FeaturedPackages() {
                   </p>
                 </div>
 
-                <button className="w-full px-4 py-2 bg-destructive text-primary-foreground rounded-full font-medium hover:bg-destructive/90 transition-colors text-sm md:text-base">
-                  View Details
-                </button>
+                <Link href="/packages">
+                  <button className="w-full px-4 py-2 bg-destructive text-primary-foreground rounded-full font-medium hover:bg-destructive/90 transition-colors text-sm md:text-base cursor-pointer">
+                    View Details
+                  </button>
+                </Link>
               </div>
             </div>
           ))}
@@ -379,7 +381,7 @@ function CheckAvailability() {
               </p>
               <p className="text-green-700 mb-4">✓ This date is available for booking</p>
               <Link href="/book">
-                <button className="px-5 py-2.5 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-all font-medium text-sm">
+                <button className="px-5 py-2.5 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-all font-medium text-sm cursor-pointer">
                   Book this Date
                 </button>
               </Link>
@@ -472,7 +474,7 @@ function Testimonials() {
       name: "Ana Reyes",
       event: "Birthday Party",
       rating: 5,
-      text: '"Everyone loved the food and service. The team was so helpful and accommodating!"',
+      text: '"Everyone loved the food and service. The team was so helpful and accommodating it made the party so fun!"',
     },
   ]
 
@@ -531,12 +533,12 @@ function CTA() {
           style={{ animationDelay: "0.5s" }}
         >
           <Link href="/menu">
-            <button className="px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 hover:shadow-lg transition-all font-archivo">
+            <button className="px-8 py-3 bg-accent text-primary-foreground rounded-full font-medium hover:bg-accent/90 hover:shadow-lg transition-all font-archivo cursor-pointer">
               Browse Menu
             </button>
           </Link>
           <Link href="/book">
-            <button className="px-8 py-3 bg-transparent text-accent border border-accent rounded-full font-medium hover:bg-accent hover:text-primary-foreground transition-all font-archivo">
+            <button className="px-8 py-3 bg-transparent text-accent border border-accent rounded-full font-medium hover:bg-accent hover:text-primary-foreground transition-all font-archivo cursor-pointer">
               Book Now
             </button>
           </Link>

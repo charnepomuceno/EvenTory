@@ -18,6 +18,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
   await dbConnect()
+    const { id } = await params
     const body = await request.json()
 
     if (body.paidAmount !== undefined && body.totalAmount) {
@@ -27,7 +28,6 @@ export async function PUT(request, { params }) {
       else if (body.paidAmount >= body.totalAmount) body.status = "Fully Paid"
     }
 
-    const { id } = await params
     const booking = await Booking.findByIdAndUpdate(id, body, { new: true })
 
     if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 })

@@ -5,18 +5,20 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
-import { Calendar } from "lucide-react"
+import { usePathname, useRouter } from 'next/navigation'
+import { Calendar } from 'lucide-react'
 
 export default function BookPage() {
   const pathname = usePathname()
+  const router = useRouter()
   const [isScrolled, setIsScrolled] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   const [showCalendar, setShowCalendar] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9)) // October 2025
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 9))
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<number | null>(null)
 
   const dateStatuses = {
@@ -45,14 +47,14 @@ export default function BookPage() {
     }
     window.addEventListener("scroll", handleScroll)
 
-    const savedProfile = localStorage.getItem("userProfile")
-    if (savedProfile) {
-      const profile = JSON.parse(savedProfile)
+    const storedUser = localStorage.getItem("current_user")
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
       setFormData((prev) => ({
         ...prev,
-        fullName: profile.fullName || "",
-        email: profile.email || "",
-        phone: profile.phone || "",
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        email: userData.email || "",
       }))
     }
 
@@ -68,6 +70,7 @@ export default function BookPage() {
 
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -147,7 +150,6 @@ export default function BookPage() {
     e.preventDefault()
     setError("")
 
-    // Validation
     if (!formData.fullName.trim()) {
       setError("Full Name is required")
       return
@@ -189,11 +191,20 @@ export default function BookPage() {
       return
     }
 
-    // Simulate form submission
     setIsSubmitting(true)
     setTimeout(() => {
       setIsSubmitting(false)
-      setSubmitted(true)
+      const bookingRequest = {
+        id: Date.now(),
+        ...formData,
+        submittedAt: new Date().toLocaleString(),
+        status: "pending",
+      }
+      const existingBookings = JSON.parse(localStorage.getItem("bookingRequests") || "[]")
+      existingBookings.push(bookingRequest)
+      localStorage.setItem("bookingRequests", JSON.stringify(existingBookings))
+
+      setShowSuccessPopup(true)
       setFormData({
         fullName: "",
         email: "",
@@ -205,15 +216,23 @@ export default function BookPage() {
         preferredPackage: "",
         specialRequests: "",
       })
-      setTimeout(() => setSubmitted(false), 3000)
     }, 1000)
   }
+
+  useEffect(() => {
+    if (showSuccessPopup) {
+      const timer = setTimeout(() => {
+        setShowSuccessPopup(false)
+        router.push("/profile")
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showSuccessPopup, router])
 
   const isActive = (href: string) => pathname === href
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
@@ -273,7 +292,7 @@ export default function BookPage() {
 
             <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
                   isActive("/profile")
                     ? "bg-accent text-primary-foreground border border-accent"
                     : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
@@ -286,7 +305,6 @@ export default function BookPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="relative w-full pt-20 md:pt-24 pb-2 md:pb-4 overflow-hidden bg-background">
         <div className="absolute inset-0 z-0">
           <Image src="/images/background.png" alt="Background" fill className="object-cover" priority />
@@ -353,7 +371,6 @@ export default function BookPage() {
                 <h3 className="text-xl font-mochiy text-primary mb-6">Contact Information</h3>
 
                 <div className="space-y-6">
-                  {/* Full Name */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Full Name <span className="text-destructive">*</span>
@@ -368,7 +385,6 @@ export default function BookPage() {
                     />
                   </div>
 
-                  {/* Email and Phone */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-foreground font-archivo text-sm mb-2">
@@ -400,12 +416,10 @@ export default function BookPage() {
                 </div>
               </div>
 
-              {/* Event Information Section */}
               <div>
                 <h3 className="text-xl font-mochiy text-primary mb-6">Event Information</h3>
 
                 <div className="space-y-6">
-                  {/* Event Type and Number of Guests */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-foreground font-archivo text-sm mb-2">
@@ -450,7 +464,7 @@ export default function BookPage() {
                       <button
                         type="button"
                         onClick={() => setShowCalendar(!showCalendar)}
-                        className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 flex items-center justify-between"
+                        className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 flex items-center justify-between cursor-pointer"
                       >
                         <span>{formData.eventDate || "Pick a date"}</span>
                         <Calendar className="w-5 h-5 text-foreground/50" />
@@ -458,12 +472,11 @@ export default function BookPage() {
 
                       {showCalendar && (
                         <div className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-xl p-3 z-50 w-full md:w-80">
-                          {/* Month Navigation */}
                           <div className="flex items-center justify-between mb-3">
                             <button
                               type="button"
                               onClick={handlePrevMonth}
-                              className="px-2 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-xs"
+                              className="px-2 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-xs cursor-pointer"
                             >
                               ← Prev
                             </button>
@@ -471,13 +484,12 @@ export default function BookPage() {
                             <button
                               type="button"
                               onClick={handleNextMonth}
-                              className="px-2 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-xs"
+                              className="px-2 py-1.5 rounded-lg bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all text-xs cursor-pointer"
                             >
                               Next →
                             </button>
                           </div>
 
-                          {/* Weekdays */}
                           <div className="grid grid-cols-7 text-center mb-1.5 font-semibold text-foreground/60 font-archivo text-xs">
                             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                               <div key={day} className="py-1">
@@ -486,7 +498,6 @@ export default function BookPage() {
                             ))}
                           </div>
 
-                          {/* Calendar Days */}
                           <div className="grid grid-cols-7 gap-0.5 text-xs mb-2">
                             {emptyDays.map((_, i) => (
                               <div key={`empty-${i}`} className="h-7"></div>
@@ -504,7 +515,6 @@ export default function BookPage() {
                             ))}
                           </div>
 
-                          {/* Legend */}
                           <div className="flex justify-center gap-2 text-xs text-foreground/70 font-archivo mb-2">
                             <div className="flex items-center gap-1">
                               <div className="w-2.5 h-2.5 bg-green-100 rounded"></div>{" "}
@@ -520,11 +530,10 @@ export default function BookPage() {
                             </div>
                           </div>
 
-                          {/* Close button */}
                           <button
                             type="button"
                             onClick={() => setShowCalendar(false)}
-                            className="w-full px-2 py-1.5 bg-secondary/60 hover:bg-secondary text-foreground rounded-lg font-archivo text-xs transition-all"
+                            className="w-full px-2 py-1.5 bg-secondary/60 hover:bg-secondary text-foreground rounded-lg font-archivo text-xs transition-all cursor-pointer"
                           >
                             Close
                           </button>
@@ -533,7 +542,6 @@ export default function BookPage() {
                     </div>
                   </div>
 
-                  {/* Event Location */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Event Location <span className="text-destructive">*</span>
@@ -548,7 +556,6 @@ export default function BookPage() {
                     />
                   </div>
 
-                  {/* Preferred Package */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Preferred Package <span className="text-destructive">*</span>
@@ -563,7 +570,6 @@ export default function BookPage() {
                     />
                   </div>
 
-                  {/* Special Requests */}
                   <div>
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Special Requests or Dietary Requirements
@@ -580,33 +586,20 @@ export default function BookPage() {
                 </div>
               </div>
 
-              {/* Error Message */}
               {error && (
                 <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
                   <p className="text-destructive font-archivo text-sm">{error}</p>
                 </div>
               )}
 
-              {/* Success Message */}
-              {submitted && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-700 font-archivo text-sm">
-                    Thank you! Your booking request has been submitted successfully. We will contact you within 24 hours
-                    to confirm.
-                  </p>
-                </div>
-              )}
-
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? "Submitting..." : "Submit Booking Request"}
               </button>
 
-              {/* Footer Note */}
               <p className="text-center text-foreground/70 text-sm font-archivo">
                 <span className="text-destructive">*</span> Required fields. We will contact you within 24 hours to
                 confirm your booking.
@@ -616,7 +609,25 @@ export default function BookPage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-popover rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+            <div className="mb-4 flex justify-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-2xl font-mochiy text-primary mb-3">Thank You!</h2>
+            <p className="text-foreground/70 font-archivo text-base mb-6">
+              Your booking request has been submitted successfully. We will contact you within 24 hours to confirm.
+            </p>
+            <p className="text-foreground/60 font-archivo text-sm">Redirecting to your profile...</p>
+          </div>
+        </div>
+      )}
+
       <footer className="bg-accent text-primary-foreground py-16 md:py-20 font-archivo">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-12 text-center md:text-left">

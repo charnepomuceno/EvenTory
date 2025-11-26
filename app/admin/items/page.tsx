@@ -12,6 +12,7 @@ type Item = {
   cost: number;
   price: number;
   status: string;
+  image?: string;
   createdAt?: string;
 }
 
@@ -21,9 +22,12 @@ export default function ManageMenuItems() {
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: "", category: "Main Dish", cost: "", price: "", status: "Available" });
+  const [formImage, setFormImage] = useState<File | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", category: "Main Dish", cost: "", price: "", status: "Available" });
+  const [editImage, setEditImage] = useState<File | null>(null);
+  const [editExistingImageUrl, setEditExistingImageUrl] = useState<string>("");
 
   const fetchItems = async (search = "") => {
     setLoading(true);
@@ -52,18 +56,37 @@ export default function ManageMenuItems() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (!formImage) {
+        alert('Please select an image for the item.');
+        return;
+      }
+
+      // upload image first
+      const fd = new FormData();
+      fd.append('image', formImage);
+      const uploadRes = await fetch('/api/uploads', { method: 'POST', body: fd });
+      const uploadJson = await uploadRes.json();
+      if (!uploadJson.success) {
+        console.error('Upload failed', uploadJson.error);
+        alert('Image upload failed');
+        return;
+      }
+
       const body = {
         name: form.name,
         category: form.category,
         cost: Number(form.cost || 0),
         price: Number(form.price || 0),
         status: form.status,
+        image: uploadJson.url,
       };
+
       const res = await fetch('/api/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const json = await res.json();
       if (json.success) {
         setShowAdd(false);
         setForm({ name: "", category: "Main Dish", cost: "", price: "", status: "Available" });
+        setFormImage(null);
         fetchItems();
       } else {
         console.error(json.error);
@@ -76,6 +99,8 @@ export default function ManageMenuItems() {
   const openEdit = (item: Item) => {
     setEditingId(item._id)
     setEditForm({ name: item.name, category: item.category, cost: String(item.cost), price: String(item.price), status: item.status })
+    setEditExistingImageUrl((item as any).image || "")
+    setEditImage(null)
     setShowEdit(true)
   }
 
@@ -83,18 +108,36 @@ export default function ManageMenuItems() {
     e.preventDefault()
     if (!editingId) return
     try {
-      const body = {
+      const body: any = {
         name: editForm.name,
         category: editForm.category,
         cost: Number(editForm.cost || 0),
         price: Number(editForm.price || 0),
         status: editForm.status,
       }
+
+      // if a new image file selected, upload it first
+      if (editImage) {
+        const fd = new FormData();
+        fd.append('image', editImage);
+        const uploadRes = await fetch('/api/uploads', { method: 'POST', body: fd });
+        const uploadJson = await uploadRes.json();
+        if (!uploadJson.success) {
+          console.error('Upload failed', uploadJson.error);
+          alert('Image upload failed');
+          return;
+        }
+
+        body.image = uploadJson.url;
+      }
+
       const res = await fetch(`/api/items/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       const json = await res.json()
       if (json.success) {
         setShowEdit(false)
         setEditingId(null)
+        setEditImage(null)
+        setEditExistingImageUrl("")
         fetchItems()
       } else {
         console.error(json.error)
@@ -220,6 +263,21 @@ export default function ManageMenuItems() {
                 <option>Available</option>
                 <option>Unavailable</option>
               </select>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-1">Image (required)</label>
+                <input
+                  required
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFormImage(e.target.files ? e.target.files[0] : null)}
+                  className="border px-3 py-2 rounded w-full"
+                />
+                {formImage && (
+                  <div className="mt-2">
+                    <img src={URL.createObjectURL(formImage)} alt="preview" className="h-24 rounded object-cover" />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="mt-4 flex justify-end gap-3">
@@ -250,6 +308,23 @@ export default function ManageMenuItems() {
                 <option>Available</option>
                 <option>Unavailable</option>
               </select>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-1">Image (leave empty to keep current)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setEditImage(e.target.files ? e.target.files[0] : null)}
+                  className="border px-3 py-2 rounded w-full"
+                />
+                <div className="mt-2 flex items-center gap-3">
+                  {editImage && (
+                    <img src={URL.createObjectURL(editImage)} alt="new preview" className="h-24 rounded object-cover" />
+                  )}
+                  {!editImage && editExistingImageUrl && (
+                    <img src={editExistingImageUrl} alt="current" className="h-24 rounded object-cover" />
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="mt-4 flex justify-end gap-3">

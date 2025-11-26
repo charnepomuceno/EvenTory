@@ -17,15 +17,35 @@ export default function ProfilePage() {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
 
   const [profileData, setProfileData] = useState({
-    fullName: "Juan Dela Cruz",
-    email: "juan@example.com",
-    phone: "+63 912 345 6789",
-    memberSince: "January 2024",
+    fullName: "",
+    phone: "",
+    email: "",
+    memberSince: "",
   })
 
   const [editFormData, setEditFormData] = useState(profileData)
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("current_user")
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      const today = new Date()
+      const memberSince = today.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+
+      setProfileData({
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        email: userData.email || "",
+        memberSince: memberSince,
+      })
+      setEditFormData({
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        email: userData.email || "",
+        memberSince: memberSince,
+      })
+    }
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
     }
@@ -38,15 +58,54 @@ export default function ProfilePage() {
     setIsEditDialogOpen(true)
   }
 
-  const handleSaveProfile = () => {
-    setProfileData(editFormData)
-    setIsEditDialogOpen(false)
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
+  const handleSaveProfile = async () => {
+    try {
+      const storedUser = localStorage.getItem("current_user")
+      if (!storedUser) return
+
+      const userData = JSON.parse(storedUser)
+
+      const response = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: userData.id,
+          fullName: editFormData.fullName,
+          email: editFormData.email,
+          phoneNumber: editFormData.phone,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setShowSuccessMessage(false)
+        return
+      }
+
+      localStorage.setItem(
+        "current_user",
+        JSON.stringify({
+          id: data.user.id,
+          phoneNumber: data.user.phoneNumber || "",
+          fullName: data.user.fullName || "",
+          email: data.user.email || "",
+        }),
+      )
+
+      setProfileData(editFormData)
+      setIsEditDialogOpen(false)
+      setShowSuccessMessage(true)
+      setTimeout(() => setShowSuccessMessage(false), 3000)
+    } catch (error) {
+      console.error("Profile update error:", error)
+      setIsEditDialogOpen(false)
+    }
   }
 
   const handleLogout = () => {
     localStorage.removeItem("authToken")
+    localStorage.removeItem("current_user")
     router.push("/login")
   }
 
@@ -154,7 +213,6 @@ export default function ProfilePage() {
                 priority
               />
             </Link>
-
             <nav className="hidden md:flex items-center gap-15">
               <Link
                 href="/menu"
@@ -193,10 +251,9 @@ export default function ProfilePage() {
                 Feedback
               </Link>
             </nav>
-
             <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
                   isActive("/profile")
                     ? "bg-accent text-primary-foreground border border-accent"
                     : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
@@ -208,7 +265,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </header>
-
       <section className="relative w-full pt-20 md:pt-24 pb-2 md:pb-4 overflow-hidden bg-background">
         <div className="absolute inset-0 z-0">
           <Image src="/images/background.png" alt="Background" fill className="object-cover" priority />
@@ -238,7 +294,7 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={handleEditProfile}
-                className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors text-base font-medium font-archivo self-start md:self-auto"
+                className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors text-base font-medium font-archivo self-start md:self-auto cursor-pointer"
               >
                 ✎ Edit Profile
               </button>
@@ -250,12 +306,12 @@ export default function ProfilePage() {
                 <p className="text-primary text-lg font-archivo font-semibold">{profileData.fullName}</p>
               </div>
               <div>
-                <p className="text-foreground/60 text-sm font-archivo mb-1">Email</p>
-                <p className="text-primary text-lg font-archivo font-semibold">{profileData.email}</p>
-              </div>
-              <div>
                 <p className="text-foreground/60 text-sm font-archivo mb-1">Phone</p>
                 <p className="text-primary text-lg font-archivo font-semibold">{profileData.phone}</p>
+              </div>
+              <div>
+                <p className="text-foreground/60 text-sm font-archivo mb-1">Email</p>
+                <p className="text-primary text-lg font-archivo font-semibold">{profileData.email || "Not set"}</p>
               </div>
               <div>
                 <p className="text-foreground/60 text-sm font-archivo mb-1">Member Since</p>
@@ -315,7 +371,7 @@ export default function ProfilePage() {
                   <div className="border-t border-border pt-4">
                     <button
                       onClick={() => setExpandedOrderId(expandedOrderId === booking.id ? null : booking.id)}
-                      className="text-accent hover:text-accent/80 transition-colors text-sm font-archivo font-medium mb-4"
+                      className="text-accent hover:text-accent/80 transition-colors text-sm font-archivo font-medium mb-4 cursor-pointer"
                     >
                       {expandedOrderId === booking.id ? "Hide Details ▼" : "View Full Details ▶"}
                     </button>
@@ -352,7 +408,7 @@ export default function ProfilePage() {
                     {booking.status === "pending" && (
                       <button
                         onClick={() => handleCancelOrder(booking.id)}
-                        className="w-full px-4 py-2 border border-destructive text-destructive rounded-lg hover:bg-destructive hover:text-primary-foreground transition-all duration-200 hover:shadow-lg active:scale-95 text-sm font-medium font-archivo"
+                        className="w-full px-4 py-2 border border-destructive text-destructive rounded-lg hover:bg-destructive hover:text-primary-foreground transition-all duration-200 hover:shadow-lg active:scale-95 text-sm font-medium font-archivo cursor-pointer"
                       >
                         Cancel Order
                       </button>
@@ -366,7 +422,7 @@ export default function ProfilePage() {
           <div className="flex justify-center opacity-0 animate-fade-in" style={{ animationDelay: "0.6s" }}>
             <button
               onClick={handleLogout}
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors text-base font-medium font-archivo flex items-center gap-2"
+              className="px-8 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors text-base font-medium font-archivo flex items-center gap-2 cursor-pointer"
             >
               <LogOut className="w-5 h-5" />
               Logout
@@ -376,8 +432,8 @@ export default function ProfilePage() {
       </section>
 
       {isEditDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#f7efe5] rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
             <h2 className="text-2xl font-mochiy text-primary mb-6">Edit Profile</h2>
 
             <div className="space-y-4 mb-6">
@@ -392,16 +448,6 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-foreground/70 text-sm font-archivo mb-2">Email</label>
-                <input
-                  aria-label="email"
-                  type="email"
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
-                />
-              </div>
-              <div>
                 <label className="block text-foreground/70 text-sm font-archivo mb-2">Phone</label>
                 <input
                   aria-label="phone"
@@ -411,18 +457,29 @@ export default function ProfilePage() {
                   className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
                 />
               </div>
+              <div>
+                <label className="block text-foreground/70 text-sm font-archivo mb-2">Email</label>
+                <input
+                  aria-label="email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  placeholder="Enter your email (optional)"
+                />
+              </div>
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setIsEditDialogOpen(false)}
-                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary transition-colors font-archivo"
+                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-secondary transition-colors font-archivo cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveProfile}
-                className="flex-1 px-4 py-2 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-colors font-archivo font-medium"
+                className="flex-1 px-4 py-2 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-colors font-archivo font-medium cursor-pointer"
               >
                 Save Changes
               </button>
@@ -432,8 +489,8 @@ export default function ProfilePage() {
       )}
 
       {cancelDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#f7efe5] rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-mochiy text-primary">Cancel Order</h2>
               <button
