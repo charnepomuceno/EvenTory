@@ -15,6 +15,8 @@ export default function ProfilePage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
+  const [bookings, setBookings] = useState<any[]>([])
+  const [loadingBookings, setLoadingBookings] = useState(true)
 
   const [profileData, setProfileData] = useState({
     fullName: "",
@@ -24,6 +26,26 @@ export default function ProfilePage() {
   })
 
   const [editFormData, setEditFormData] = useState(profileData)
+
+  const fetchBookings = async () => {
+    try {
+      const storedUser = localStorage.getItem("current_user")
+      if (!storedUser) return
+
+      const userData = JSON.parse(storedUser)
+
+      const response = await fetch(`/api/bookings?userId=${userData.id}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        setBookings(data.bookings || [])
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error)
+    } finally {
+      setLoadingBookings(false)
+    }
+  }
 
   useEffect(() => {
     const storedUser = localStorage.getItem("current_user")
@@ -44,6 +66,8 @@ export default function ProfilePage() {
         email: userData.email || "",
         memberSince: memberSince,
       })
+
+      fetchBookings()
     }
 
     const handleScroll = () => {
@@ -109,88 +133,45 @@ export default function ProfilePage() {
     router.push("/login")
   }
 
-  const handleCancelOrder = (orderId: string) => {
+  const handleCancelOrder = async (orderId: string) => {
     setCancellingOrderId(orderId)
     setCancelDialogOpen(true)
   }
 
-  const confirmCancelOrder = () => {
-    setCancelDialogOpen(false)
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
+  const confirmCancelOrder = async () => {
+    if (!cancellingOrderId) return
+
+    try {
+      const response = await fetch(`/api/bookings/${cancellingOrderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" }),
+      })
+
+      if (response.ok) {
+        await fetchBookings()
+        setCancelDialogOpen(false)
+        setShowSuccessMessage(true)
+        setTimeout(() => setShowSuccessMessage(false), 3000)
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error)
+    }
   }
 
   const isActive = (href: string) => pathname === href
 
-  const bookings = [
-    {
-      id: "pending-1",
-      title: "Birthday Party",
-      status: "pending",
-      package: "Birthday Celebration Package",
-      date: "February 20, 2025",
-      guests: "40 guests",
-      location: "Private Residence, Quezon City",
-      price: "₱18,000",
-      paid: "₱0",
-      details: {
-        eventType: "Birthday Party",
-        numberOfGuests: 40,
-        eventDate: "February 20, 2025",
-        eventLocation: "Private Residence, Quezon City",
-        preferredPackage: "Birthday Celebration Package",
-        specialRequests: "Please include a birthday cake and decorations",
-      },
-    },
-    {
-      id: "confirmed-1",
-      title: "Wedding",
-      status: "confirmed",
-      package: "Wedding Elegance Package",
-      date: "March 15, 2025",
-      guests: "80 guests",
-      location: "Grand Ballroom, Manila Hotel",
-      price: "₱45,000",
-      paid: "₱20,000",
-      details: {
-        eventType: "Wedding",
-        numberOfGuests: 80,
-        eventDate: "March 15, 2025",
-        eventLocation: "Grand Ballroom, Manila Hotel",
-        preferredPackage: "Wedding Elegance Package",
-        specialRequests: "Vegetarian options needed for 10 guests",
-      },
-    },
-    {
-      id: "completed-1",
-      title: "Corporate Event",
-      status: "completed",
-      package: "Corporate Event Package",
-      date: "December 10, 2024",
-      guests: "60 guests",
-      location: "Conference Hall, BGC",
-      price: "₱28,000",
-      paid: "₱28,000",
-      details: {
-        eventType: "Corporate Event",
-        numberOfGuests: 60,
-        eventDate: "December 10, 2024",
-        eventLocation: "Conference Hall, BGC",
-        preferredPackage: "Corporate Event Package",
-        specialRequests: "Halal and vegan options required",
-      },
-    },
-  ]
-
   const getStatusColor = (status: string) => {
     if (status === "pending") return "bg-yellow-100 text-yellow-700"
     if (status === "confirmed") return "bg-destructive text-primary-foreground"
+    if (status === "cancelled") return "bg-red-100 text-red-700"
     return "bg-gray-200 text-gray-700"
   }
 
   const getStatusLabel = (status: string) => {
     if (status === "pending") return "⏱ Pending"
     if (status === "confirmed") return "✓ Confirmed"
+    if (status === "cancelled") return "✗ Cancelled"
     return "✓ Completed"
   }
 
@@ -329,94 +310,112 @@ export default function ProfilePage() {
               <p className="text-foreground/70 text-base font-archivo">View your past and upcoming bookings</p>
             </div>
 
-            <div className="space-y-4">
-              {bookings.map((booking) => (
-                <div
-                  key={booking.id}
-                  className="border border-border rounded-xl p-6 md:p-8 hover:shadow-md transition-all duration-200 hover:border-accent/30 bg-card"
-                >
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-xl md:text-2xl font-mochiy text-primary">{booking.title}</h3>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium font-archivo ${getStatusColor(booking.status)}`}
-                        >
-                          {getStatusLabel(booking.status)}
-                        </span>
-                      </div>
-                      <p className="text-foreground/70 text-sm font-archivo mb-4">{booking.package}</p>
+            {loadingBookings ? (
+              <div className="py-12 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent mx-auto mb-4"></div>
+                <p className="text-foreground/60 font-archivo">Loading bookings...</p>
+              </div>
+            ) : bookings.length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-foreground/60 font-archivo mb-4">No bookings found</p>
+                <Link href="/book">
+                  <button className="px-6 py-2 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-colors font-archivo cursor-pointer">
+                    Make a Booking
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {bookings.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="border border-border rounded-xl p-6 md:p-8 hover:shadow-md transition-all duration-200 hover:border-accent/30 bg-card"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="text-xl md:text-2xl font-mochiy text-primary">{booking.event_type}</h3>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium font-archivo ${getStatusColor(booking.status)}`}
+                          >
+                            {getStatusLabel(booking.status)}
+                          </span>
+                        </div>
+                        <p className="text-foreground/70 text-sm font-archivo mb-4">{booking.preferred_package}</p>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
-                          <Calendar className="w-4 h-4" />
-                          <span>{booking.date}</span>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
+                            <Calendar className="w-4 h-4" />
+                            <span>{booking.event_date}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
+                            <Users className="w-4 h-4" />
+                            <span>{booking.number_of_guests} guests</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
+                            <MapPin className="w-4 h-4" />
+                            <span>{booking.event_location}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
-                          <Users className="w-4 h-4" />
-                          <span>{booking.guests}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
-                          <MapPin className="w-4 h-4" />
-                          <span>{booking.location}</span>
-                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-mochiy text-primary">₱{booking.price || "0"}</p>
+                        <p className="text-foreground/60 text-sm font-archivo">Paid: ₱{booking.paid || "0"}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-mochiy text-primary">{booking.price}</p>
-                      <p className="text-foreground/60 text-sm font-archivo">Paid: {booking.paid}</p>
-                    </div>
-                  </div>
 
-                  <div className="border-t border-border pt-4">
-                    <button
-                      onClick={() => setExpandedOrderId(expandedOrderId === booking.id ? null : booking.id)}
-                      className="text-accent hover:text-accent/80 transition-colors text-sm font-archivo font-medium mb-4 cursor-pointer"
-                    >
-                      {expandedOrderId === booking.id ? "Hide Details ▼" : "View Full Details ▶"}
-                    </button>
-
-                    {expandedOrderId === booking.id && (
-                      <div className="bg-secondary/30 rounded-lg p-4 mb-4 space-y-3">
-                        <div>
-                          <p className="text-foreground/60 text-xs font-archivo mb-1">Event Type</p>
-                          <p className="text-foreground font-archivo text-sm">{booking.details.eventType}</p>
-                        </div>
-                        <div>
-                          <p className="text-foreground/60 text-xs font-archivo mb-1">Number of Guests</p>
-                          <p className="text-foreground font-archivo text-sm">{booking.details.numberOfGuests}</p>
-                        </div>
-                        <div>
-                          <p className="text-foreground/60 text-xs font-archivo mb-1">Event Date</p>
-                          <p className="text-foreground font-archivo text-sm">{booking.details.eventDate}</p>
-                        </div>
-                        <div>
-                          <p className="text-foreground/60 text-xs font-archivo mb-1">Event Location</p>
-                          <p className="text-foreground font-archivo text-sm">{booking.details.eventLocation}</p>
-                        </div>
-                        <div>
-                          <p className="text-foreground/60 text-xs font-archivo mb-1">Preferred Package</p>
-                          <p className="text-foreground font-archivo text-sm">{booking.details.preferredPackage}</p>
-                        </div>
-                        <div>
-                          <p className="text-foreground/60 text-xs font-archivo mb-1">Special Requests</p>
-                          <p className="text-foreground font-archivo text-sm">{booking.details.specialRequests}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {booking.status === "pending" && (
+                    <div className="border-t border-border pt-4">
                       <button
-                        onClick={() => handleCancelOrder(booking.id)}
-                        className="w-full px-4 py-2 border border-destructive text-destructive rounded-lg hover:bg-destructive hover:text-primary-foreground transition-all duration-200 hover:shadow-lg active:scale-95 text-sm font-medium font-archivo cursor-pointer"
+                        onClick={() => setExpandedOrderId(expandedOrderId === booking.id ? null : booking.id)}
+                        className="text-accent hover:text-accent/80 transition-colors text-sm font-archivo font-medium mb-4 cursor-pointer"
                       >
-                        Cancel Order
+                        {expandedOrderId === booking.id ? "Hide Details ▼" : "View Full Details ▶"}
                       </button>
-                    )}
+
+                      {expandedOrderId === booking.id && (
+                        <div className="bg-secondary/30 rounded-lg p-4 mb-4 space-y-3">
+                          <div>
+                            <p className="text-foreground/60 text-xs font-archivo mb-1">Event Type</p>
+                            <p className="text-foreground font-archivo text-sm">{booking.event_type}</p>
+                          </div>
+                          <div>
+                            <p className="text-foreground/60 text-xs font-archivo mb-1">Number of Guests</p>
+                            <p className="text-foreground font-archivo text-sm">{booking.number_of_guests}</p>
+                          </div>
+                          <div>
+                            <p className="text-foreground/60 text-xs font-archivo mb-1">Event Date</p>
+                            <p className="text-foreground font-archivo text-sm">{booking.event_date}</p>
+                          </div>
+                          <div>
+                            <p className="text-foreground/60 text-xs font-archivo mb-1">Event Location</p>
+                            <p className="text-foreground font-archivo text-sm">{booking.event_location}</p>
+                          </div>
+                          <div>
+                            <p className="text-foreground/60 text-xs font-archivo mb-1">Preferred Package</p>
+                            <p className="text-foreground font-archivo text-sm">{booking.preferred_package}</p>
+                          </div>
+                          {booking.special_requests && (
+                            <div>
+                              <p className="text-foreground/60 text-xs font-archivo mb-1">Special Requests</p>
+                              <p className="text-foreground font-archivo text-sm">{booking.special_requests}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {booking.status === "pending" && (
+                        <button
+                          onClick={() => handleCancelOrder(booking.id)}
+                          className="w-full px-4 py-2 border border-destructive text-destructive rounded-lg hover:bg-destructive hover:text-primary-foreground transition-all duration-200 hover:shadow-lg active:scale-95 text-sm font-medium font-archivo cursor-pointer"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-center opacity-0 animate-fade-in" style={{ animationDelay: "0.6s" }}>

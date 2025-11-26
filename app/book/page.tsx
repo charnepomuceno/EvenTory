@@ -146,7 +146,7 @@ export default function BookPage() {
   const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => null)
   const monthName = currentDate.toLocaleString("default", { month: "long", year: "numeric" })
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError("")
 
@@ -192,18 +192,44 @@ export default function BookPage() {
     }
 
     setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
-      const bookingRequest = {
-        id: Date.now(),
-        ...formData,
-        submittedAt: new Date().toLocaleString(),
-        status: "pending",
-      }
-      const existingBookings = JSON.parse(localStorage.getItem("bookingRequests") || "[]")
-      existingBookings.push(bookingRequest)
-      localStorage.setItem("bookingRequests", JSON.stringify(existingBookings))
 
+    try {
+      const storedUser = localStorage.getItem("current_user")
+      if (!storedUser) {
+        setError("You must be logged in to book")
+        setIsSubmitting(false)
+        return
+      }
+
+      const userData = JSON.parse(storedUser)
+
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: userData.id,
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          eventType: formData.eventType,
+          numberOfGuests: formData.numberOfGuests,
+          eventDate: formData.eventDate,
+          eventLocation: formData.eventLocation,
+          preferredPackage: formData.preferredPackage,
+          specialRequests: formData.specialRequests,
+          price: selectedPackageInfo?.price?.toString() || "0",
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Failed to submit booking")
+        setIsSubmitting(false)
+        return
+      }
+
+      setIsSubmitting(false)
       setShowSuccessPopup(true)
       setFormData({
         fullName: "",
@@ -216,7 +242,13 @@ export default function BookPage() {
         preferredPackage: "",
         specialRequests: "",
       })
-    }, 1000)
+      sessionStorage.removeItem("selectedPackage")
+      setSelectedPackageInfo(null)
+    } catch (error) {
+      console.error("Booking submission error:", error)
+      setError("Failed to submit booking. Please try again.")
+      setIsSubmitting(false)
+    }
   }
 
   useEffect(() => {
