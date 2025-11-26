@@ -194,12 +194,16 @@ export default function BookPage() {
     setIsSubmitting(true)
     setTimeout(() => {
       setIsSubmitting(false)
+      const storedUser = JSON.parse(localStorage.getItem("current_user") || "{}")
+
       const bookingRequest = {
         id: Date.now(),
+        userId: storedUser.id,            // 🔥 LINK BOOKING TO USER
         ...formData,
         submittedAt: new Date().toLocaleString(),
         status: "pending",
       }
+
       const existingBookings = JSON.parse(localStorage.getItem("bookingRequests") || "[]")
       existingBookings.push(bookingRequest)
       localStorage.setItem("bookingRequests", JSON.stringify(existingBookings))

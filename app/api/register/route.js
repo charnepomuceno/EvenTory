@@ -1,3 +1,4 @@
+// app/api/register/route.js
 import dbConnect from "@/lib/db"
 import User from "@/lib/models/User"
 import { NextResponse } from "next/server"
@@ -8,17 +9,19 @@ export async function POST(request) {
     await dbConnect()
 
     const body = await request.json()
-    const { fullName, phoneNumber, email, password, registrationType } = body
+    let { fullName, phoneNumber, email, password, registrationType } = body
 
     if (!fullName || !password || !registrationType) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    // Normalize credential
     if (registrationType === "phone") {
       if (!phoneNumber || phoneNumber.trim() === "") {
         return NextResponse.json({ error: "Phone number is required" }, { status: 400 })
       }
-      const existingUser = await User.findOne({ phoneNumber: phoneNumber.trim() })
+      phoneNumber = phoneNumber.replace(/\D/g, "").trim() // Normalize phone
+      const existingUser = await User.findOne({ phoneNumber })
       if (existingUser) {
         return NextResponse.json({ error: "Phone number already registered" }, { status: 400 })
       }
@@ -26,7 +29,8 @@ export async function POST(request) {
       if (!email || email.trim() === "") {
         return NextResponse.json({ error: "Email is required" }, { status: 400 })
       }
-      const existingUser = await User.findOne({ email: email.trim() })
+      email = email.trim().toLowerCase() // Normalize email
+      const existingUser = await User.findOne({ email })
       if (existingUser) {
         return NextResponse.json({ error: "Email already registered" }, { status: 400 })
       }
@@ -40,11 +44,10 @@ export async function POST(request) {
       registrationType,
     }
 
-    if (registrationType === "phone") userData.phoneNumber = phoneNumber.trim()
-    if (registrationType === "email") userData.email = email.trim()
+    if (registrationType === "phone") userData.phoneNumber = phoneNumber
+    if (registrationType === "email") userData.email = email
 
     const newUser = new User(userData)
-
     await newUser.save()
 
     return NextResponse.json(

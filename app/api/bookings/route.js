@@ -1,39 +1,66 @@
-import { Booking } from "@/lib/models/admin-booking"
-import dbConnect from "@/lib/db"
 import { NextResponse } from "next/server"
+
+let bookings = []
 
 export async function GET(request) {
   try {
-  await dbConnect()
-
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
     const customer = searchParams.get("customer")
 
-    const query = {}
-    if (status) query.status = status
-    if (customer) query.customer = { $regex: customer, $options: "i" }
+    let filtered = bookings
 
-    const bookings = await Booking.find(query).sort({ createdAt: -1 })
-    return NextResponse.json(bookings)
+    if (status) {
+      filtered = filtered.filter((b) => b.status?.toLowerCase() === status.toLowerCase())
+    }
+
+    if (customer) {
+      filtered = filtered.filter(
+        (b) =>
+          b.customer?.toLowerCase().includes(customer.toLowerCase()) ||
+          b.email?.toLowerCase().includes(customer.toLowerCase())
+      )
+    }
+
+    return NextResponse.json(
+      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    )
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request) {
   try {
-  await dbConnect()
     const body = await request.json()
 
-    // Calculate balance
-    body.balance = body.totalAmount - (body.paidAmount || 0)
+    const newBooking = {
+      _id: Date.now().toString(),
+      ...body,
+      status: body.status || "Pending",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
 
-    const booking = new Booking(body)
-    await booking.save()
+    bookings.push(newBooking)
 
-    return NextResponse.json(booking, { status: 201 })
+    return NextResponse.json(newBooking, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error("Booking POST Error:", error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    )
   }
+}
+
+export function getBookings() {
+  return bookings
+}
+
+export function setBookings(newBookings) {
+  bookings = newBookings
 }

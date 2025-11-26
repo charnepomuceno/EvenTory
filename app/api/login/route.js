@@ -1,3 +1,4 @@
+// app/api/login/route.js
 import dbConnect from "@/lib/db"
 import User from "@/lib/models/User"
 import { NextResponse } from "next/server"
@@ -15,10 +16,15 @@ export async function POST(request) {
     }
 
     let user
+
     if (loginType === "phone") {
-      user = await User.findOne({ phoneNumber: credential.trim() })
+      // Normalize phone: remove non-digit characters
+      const cleanedPhone = credential.replace(/\D/g, "").trim()
+      user = await User.findOne({ phoneNumber: cleanedPhone })
     } else {
-      user = await User.findOne({ email: credential.trim() })
+      // Normalize email: lowercase and trim
+      const email = credential.trim().toLowerCase()
+      user = await User.findOne({ email })
     }
 
     if (!user) {

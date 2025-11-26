@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -48,6 +47,7 @@ export default function LoginPage() {
     if (!validateForm()) return
 
     setLoading(true)
+    setErrors({})
 
     try {
       const response = await fetch("/api/login", {
@@ -62,30 +62,31 @@ export default function LoginPage() {
 
       const data = await response.json()
 
-      if (Boolean(data.user.isAdmin)) {
-        router.push("/admin")
-      } else {
-        router.push("/home")
-      }
-      
+      // FIRST check if login failed
       if (!response.ok) {
-        setErrors({ credential: data.error })
+        setErrors({ credential: data.error || "Incorrect credentials" })
         setLoading(false)
         return
       }
 
-      setLoading(false)
+      // If login succeeded, store user and redirect
       localStorage.setItem(
         "current_user",
         JSON.stringify({
           id: data.user.id,
+          fullName: data.user.fullName,
           phoneNumber: data.user.phoneNumber || "",
-          fullName: data.user.fullName || "",
           email: data.user.email || "",
           isAdmin: Boolean(data.user.isAdmin),
-        }),
+        })
       )
-    } catch (error) {
+
+      setLoading(false)
+
+      if (data.user.isAdmin) router.push("/admin")
+      else router.push("/home")
+    } catch (err) {
+      console.error(err)
       setErrors({ credential: "Login failed" })
       setLoading(false)
     }
@@ -193,11 +194,7 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errors.password ? (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-              ) : (
-                <p className="text-gray-500 text-xs mt-1">Minimum 6 characters required</p>
-              )}
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
               <div className="text-right mt-2">
                 <a href="#" className="text-[#669BBC] text-xs hover:underline">
                   Forgot Password?
@@ -221,8 +218,7 @@ export default function LoginPage() {
           <p className="text-center text-slate-600 text-xs md:text-sm mt-4">
             {"Don't have an account?"}
             <Link href="/register" className="text-[#669BBC] font-semibold hover:underline">
-              {" "}
-              Sign up
+              {" "}Sign up
             </Link>
           </p>
         </div>

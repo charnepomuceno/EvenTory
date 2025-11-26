@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -154,6 +152,7 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Full Name */}
             <div>
               <label className="block text-[#003d5c] font-medium mb-2 text-sm">Full Name</label>
               <input
@@ -170,6 +169,7 @@ export default function RegisterPage() {
               {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
             </div>
 
+            {/* Registration Type */}
             <div>
               <label className="block text-[#003d5c] font-medium mb-3 text-sm">Sign up with:</label>
               <div className="flex gap-3 mb-4">
@@ -198,6 +198,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Email / Phone */}
             {registrationType === "phone" ? (
               <div>
                 <label className="block text-[#003d5c] font-medium mb-2 text-sm">Phone Number</label>
@@ -230,6 +231,7 @@ export default function RegisterPage() {
               </div>
             )}
 
+            {/* Password */}
             <div>
               <label className="block text-[#003d5c] font-medium mb-2 text-sm">Password</label>
               <div className="relative">
@@ -252,13 +254,10 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errors.password ? (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-              ) : (
-                <p className="text-gray-500 text-xs mt-1">Minimum of 6 characters required</p>
-              )}
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
 
+            {/* Confirm Password */}
             <div>
               <label className="block text-[#003d5c] font-medium mb-2 text-sm">Confirm Password</label>
               <div className="relative">

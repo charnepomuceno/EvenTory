@@ -21,7 +21,7 @@ export async function POST(request) {
         phoneNumber,
         updatedAt: new Date(),
       },
-      { new: true },
+      { new: true }
     )
 
     if (!updatedUser) {
@@ -30,10 +30,10 @@ export async function POST(request) {
 
     return NextResponse.json({
       user: {
-        id: updatedUser._id,
+        id: updatedUser._id.toString(),
         fullName: updatedUser.fullName,
-        phoneNumber: updatedUser.phoneNumber,
         email: updatedUser.email,
+        phoneNumber: updatedUser.phoneNumber,
         registrationType: updatedUser.registrationType,
       },
     })
