@@ -5,7 +5,7 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname } from 'next/navigation'
 
 export default function FeedbackPage() {
   const pathname = usePathname()
@@ -15,6 +15,11 @@ export default function FeedbackPage() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
   const [isScrolled, setIsScrolled] = useState(false)
+  const [personalDetails, setPersonalDetails] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+  })
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +27,18 @@ export default function FeedbackPage() {
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("current_user")
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      setPersonalDetails({
+        fullName: userData.fullName || "",
+        phone: userData.phoneNumber || "",
+        email: userData.email || "",
+      })
+    }
   }, [])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -104,7 +121,7 @@ export default function FeedbackPage() {
 
             <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium ${
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
                   isActive("/profile")
                     ? "bg-accent text-primary-foreground border border-accent"
                     : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
@@ -141,13 +158,42 @@ export default function FeedbackPage() {
 
       <section className="pt-2 pb-20 md:pt-4 md:pb-28 bg-background">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
           <div
             className="bg-card rounded-2xl shadow-xl p-8 md:p-12 mb-16 md:mb-24 opacity-0 animate-fade-in"
             style={{ animationDelay: "0.5s" }}
           >
+
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-mochiy text-primary mb-2">Rate Your Experience</h2>
               <p className="text-foreground/70 text-base font-archivo">Your feedback helps us serve you better</p>
+            </div>
+
+            <div className="mb-10">
+              <h3 className="text-xl md:text-2xl font-mochiy text-primary mb-2">Your Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <p className="text-foreground/60 text-sm mb-1">Full Name</p>
+                  <p className="text-primary text-lg font-semibold truncate overflow-hidden">
+                    {personalDetails.fullName || "Not set"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-foreground/60 text-sm mb-1">Email</p>
+                  <p className="text-primary text-lg font-semibold truncate overflow-hidden">
+                    {personalDetails.email || "Not set"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-foreground/60 text-sm mb-1">Phone</p>
+                  <p className="text-primary text-lg font-semibold">
+                    {personalDetails.phone || "Not set"}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -163,7 +209,7 @@ export default function FeedbackPage() {
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
                       onClick={() => setRating(star)}
-                      className="transition-transform duration-200 hover:scale-110"
+                      className="transition-transform duration-200 hover:scale-110 cursor-pointer"
                     >
                       <span
                         className={`text-5xl md:text-6xl transition-all duration-200 ${
@@ -206,7 +252,7 @@ export default function FeedbackPage() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200"
+                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200 cursor-pointer"
               >
                 Submit Feedback
               </button>
@@ -222,6 +268,7 @@ export default function FeedbackPage() {
             </div>
 
             <div className="space-y-6 opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+              {/* sample reviews */}
               <div className="bg-card rounded-lg p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow border border-border/50">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                   <div>
@@ -280,6 +327,7 @@ export default function FeedbackPage() {
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
@@ -302,26 +350,10 @@ export default function FeedbackPage() {
             <div>
               <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/menu" className="hover:text-primary-foreground/70 transition">
-                    Menu
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/packages" className="hover:text-primary-foreground/70 transition">
-                    Packages
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/book" className="hover:text-primary-foreground/70 transition">
-                    Book Now
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/feedback" className="hover:text-primary-foreground/70 transition">
-                    Feedback
-                  </Link>
-                </li>
+                <li><Link href="/menu">Menu</Link></li>
+                <li><Link href="/packages">Packages</Link></li>
+                <li><Link href="/book">Book Now</Link></li>
+                <li><Link href="/feedback">Feedback</Link></li>
               </ul>
             </div>
 
@@ -337,7 +369,9 @@ export default function FeedbackPage() {
 
           <hr className="border-primary-foreground/20 mb-6" />
 
-          <div className="text-center text-xs text-primary-foreground/70">© 2025 EvenTory. All rights reserved.</div>
+          <div className="text-center text-xs text-primary-foreground/70">
+            © 2025 EvenTory. All rights reserved.
+          </div>
         </div>
       </footer>
     </main>

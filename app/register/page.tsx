@@ -1,162 +1,311 @@
 "use client"
 
+import type React from "react"
+
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Mochiy_Pop_One, Archivo } from "next/font/google"
+import { Eye, EyeOff } from "lucide-react"
 
 const mochiyPopOne = Mochiy_Pop_One({ subsets: ["latin"], weight: "400" })
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export default function RegisterPage() {
+  const router = useRouter()
+  const [registrationType, setRegistrationType] = useState<"phone" | "email">("phone")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
+    phoneNumber: "",
     email: "",
     password: "",
     confirmPassword: "",
   })
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required"
+
+    if (registrationType === "phone") {
+      if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required"
+      else if (!/^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, "")))
+        newErrors.phoneNumber = "Please enter a valid phone number"
+    } else {
+      if (!formData.email.trim()) newErrors.email = "Email is required"
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Please enter a valid email"
+    }
+
+    if (!formData.password.trim()) newErrors.password = "Password is required"
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
+
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
+    if (!validateForm()) return
+
     setLoading(true)
-    console.log("Register:", formData)
-    setTimeout(() => setLoading(false), 1000)
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.fullName.trim(),
+          phoneNumber: registrationType === "phone" ? formData.phoneNumber.trim() : null,
+          email: registrationType === "email" ? formData.email.trim() : null,
+          password: formData.password,
+          registrationType,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrors({ submit: data.error })
+        setLoading(false)
+        return
+      }
+
+      setLoading(false)
+      setShowSuccessPopup(true)
+    } catch (error) {
+      setErrors({ submit: "Registration failed" })
+      setLoading(false)
+    }
   }
+
+  const handleSuccessPopupClose = () => {
+    setShowSuccessPopup(false)
+    router.push("/login")
+  }
+
+  const isFormValid = () =>
+    formData.fullName.trim() &&
+    (registrationType === "phone"
+      ? formData.phoneNumber.trim() && /^\d{10,}$/.test(formData.phoneNumber.replace(/\D/g, ""))
+      : formData.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) &&
+    formData.password.trim().length >= 6 &&
+    formData.password === formData.confirmPassword
 
   return (
-    <main
-      className={`min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-6 ${archivo.className}`}
-      style={{
-        backgroundImage: "url(/images/background.png)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      {/* Logo and Tagline */}
-      <div className="mb-8 md:mb-12 text-center">
-        <img
-          src="/images/eventory.png"
-          alt="Eventory Logo"
-          className="h-16 md:h-20 mx-auto mb-2"
-        />
-        <p className="text-slate-500 text-sm md:text-base font-medium">
-          Quality Filipino and Bicolano Catering
-        </p>
-      </div>
+    <>
+      {showSuccessPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white rounded-2xl p-8 text-center max-w-sm">
+            <div className="mb-4 flex justify-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <h2 className={`text-2xl font-bold text-[#003d5c] mb-2 ${mochiyPopOne.className}`}>Account Created!</h2>
+            <p className="text-slate-600 text-sm mb-6">
+              Your account has been successfully created. You can now log in with your credentials.
+            </p>
+            <button
+              onClick={handleSuccessPopupClose}
+              className="w-full py-3 bg-[#669BBC] hover:bg-[#5a87a8] text-white font-bold rounded-lg transition-all cursor-pointer"
+            >
+              Continue to Login
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Auth Card */}
-      <div className="w-full max-w-md md:max-w-lg bg-white/90 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 border border-white/30">
-        {/* Welcome Section */}
-        <div className="mb-6 md:mb-8">
-          <h1
-            className={`text-2xl md:text-3xl font-bold text-[#003d5c] mb-2 ${mochiyPopOne.className}`}
-          >
-            Create Account
-          </h1>
-          <p className="text-slate-600 text-xs md:text-sm font-medium">
-            Join us today
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white rounded-2xl p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#669BBC] border-t-transparent mx-auto mb-4"></div>
+            <p className={`text-[#003d5c] font-semibold ${mochiyPopOne.className}`}>Creating account...</p>
+          </div>
+        </div>
+      )}
+
+      <main
+        className={`min-h-screen w-full flex items-center justify-center p-4 md:p-6 ${archivo.className}`}
+        style={{
+          backgroundImage: "url(/images/bg.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <div className="w-full max-w-md md:max-w-lg bg-white/90 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 border border-white/30">
+          <div className="mb-8 md:mb-10 text-center">
+            <img src="/images/eventory.png" alt="Eventory Logo" className="h-16 md:h-20 mx-auto mb-3" />
+            <p className="text-slate-500 text-sm md:text-base font-medium">Quality Filipino and Bicolano Catering</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-[#003d5c] font-medium mb-2 text-sm">Full Name</label>
+              <input
+                type="text"
+                name="fullName"
+                required
+                value={formData.fullName}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                  errors.fullName ? "border-red-500" : "border-[#e8d5c4]"
+                }`}
+                placeholder="Enter your Full Name"
+              />
+              {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
+            </div>
+
+            <div>
+              <label className="block text-[#003d5c] font-medium mb-3 text-sm">Sign up with:</label>
+              <div className="flex gap-3 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setRegistrationType("phone")}
+                  className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+                    registrationType === "phone"
+                      ? "bg-[#669BBC] text-white"
+                      : "bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]"
+                  }`}
+                >
+                  Phone Number
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegistrationType("email")}
+                  className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+                    registrationType === "email"
+                      ? "bg-[#669BBC] text-white"
+                      : "bg-[#FFF9EB] text-[#003d5c] border-2 border-[#e8d5c4]"
+                  }`}
+                >
+                  Email
+                </button>
+              </div>
+            </div>
+
+            {registrationType === "phone" ? (
+              <div>
+                <label className="block text-[#003d5c] font-medium mb-2 text-sm">Phone Number</label>
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.phoneNumber ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Enter your Phone Number"
+                />
+                {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+              </div>
+            ) : (
+              <div>
+                <label className="block text-[#003d5c] font-medium mb-2 text-sm">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.email ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Enter your Email"
+                />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[#003d5c] font-medium mb-2 text-sm">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 pr-10 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.password ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Enter your Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-[#003d5c] cursor-pointer"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {errors.password ? (
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              ) : (
+                <p className="text-gray-500 text-xs mt-1">Minimum of 6 characters required</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-[#003d5c] font-medium mb-2 text-sm">Confirm Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 pr-10 bg-[#FFF9EB] border-2 rounded-lg text-[#003d5c] focus:ring-2 focus:ring-[#669BBC] transition-all ${
+                    errors.confirmPassword ? "border-red-500" : "border-[#e8d5c4]"
+                  }`}
+                  placeholder="Confirm your Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-3 text-[#003d5c] cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+            </div>
+
+            <button
+              type="submit"
+              disabled={!isFormValid() || loading}
+              className={`w-full py-3 mt-4 font-bold text-base rounded-lg transition-all duration-300 cursor-pointer ${
+                !isFormValid() || loading
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-[#669BBC] hover:bg-[#5a87a8] text-white"
+              }`}
+            >
+              {loading ? "Creating account..." : "Sign Up"}
+            </button>
+            {errors.submit && <p className="text-red-500 text-xs mt-1">{errors.submit}</p>}
+          </form>
+
+          <p className="text-center text-slate-600 text-xs md:text-sm mt-4">
+            Already have an account?{" "}
+            <Link href="/login" className="text-[#669BBC] font-semibold hover:underline">
+              Sign in
+            </Link>
           </p>
         </div>
-
-        {/* Toggle Buttons (same design) */}
-        <div className="flex mb-6 md:mb-8 bg-[#669BBC] p-1 rounded-lg gap-1">
-          <Link
-            href="/login"
-            className="flex-1 py-2 md:py-3 px-3 md:px-4 font-bold text-sm md:text-base rounded-md text-white text-center hover:opacity-90 transition-all"
-          >
-            Login
-          </Link>
-          <button
-            type="button"
-            className="flex-1 py-2 md:py-3 px-3 md:px-4 font-bold text-sm md:text-base rounded-md bg-[#FFF9EB] text-[#003d5c] shadow-sm"
-          >
-            Register
-          </button>
-        </div>
-
-        {/* Register Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-[#003d5c] font-medium mb-2 text-sm">
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="fullName"
-              required
-              value={formData.fullName}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#669BBC] transition-all"
-              placeholder="Enter your full name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[#003d5c] font-medium mb-2 text-sm">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#669BBC] transition-all"
-              placeholder="Enter your email"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[#003d5c] font-medium mb-2 text-sm">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#669BBC] transition-all"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[#003d5c] font-medium mb-2 text-sm">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-[#FFF9EB] border-2 border-[#e8d5c4] rounded-lg text-[#003d5c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#669BBC] transition-all"
-              placeholder="Confirm your password"
-            />
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 mt-4 bg-[#669BBC] hover:bg-[#5a87a8] text-white font-bold text-base rounded-lg transition-all duration-300 disabled:opacity-70"
-          >
-            {loading ? "Creating account..." : "Register"}
-          </button>
-        </form>
-      </div>
-    </main>
+      </main>
+    </>
   )
 }
