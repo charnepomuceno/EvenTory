@@ -16,6 +16,10 @@ interface Package {
   minPrice: number
   maxPrice: number
   inclusions: string[]
+  mainDish: string[]
+  appetizer: string[]
+  dessert: string[]
+  beverage: string[]
   status?: string
 }
 
@@ -27,17 +31,12 @@ interface MenuItem {
   description: string
 }
 
-// Packages will be loaded from the API
-// We map the API/package model fields into the UI shape below
-
 const apiPackageToUI = (p: any): Package => {
-  // p expected fields from model: name, tier, status, guests, price, items
   const priceRange = p.price || ""
 
-  // Try to parse a numeric minPrice from the price string (e.g. "₱15,000-₱25,000" or "₱15,000 - ₱25,000")
   const parseMin = (pr: string) => {
     try {
-      const digits = pr.replace(/[^0-9\-]/g, "").split("-")
+      const digits = pr.replace(/[^0-9-]/g, "").split("-")
       const num = Number(digits[0]) || 0
       return num
     } catch (e) {
@@ -55,7 +54,11 @@ const apiPackageToUI = (p: any): Package => {
     priceRange: priceRange,
     minPrice: parseMin(priceRange),
     maxPrice: 0,
-    inclusions: Array.isArray(p.items) ? p.items : [],
+    inclusions: Array.isArray(p.inclusions) ? p.inclusions : [],
+    mainDish: Array.isArray(p.mainDish) ? p.mainDish : [],
+    appetizer: Array.isArray(p.appetizer) ? p.appetizer : [],
+    dessert: Array.isArray(p.dessert) ? p.dessert : [],
+    beverage: Array.isArray(p.beverage) ? p.beverage : [],
     status: p.status || "Active",
   }
 }
@@ -78,7 +81,6 @@ export default function PackagesPage() {
   const [selectedMenuItems, setSelectedMenuItems] = useState<string[]>([])
   const [customPrice, setCustomPrice] = useState(0)
 
-  // Live data from API
   const [packagesData, setPackagesData] = useState<Package[]>([])
   const [loadingPackages, setLoadingPackages] = useState(false)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
@@ -87,7 +89,7 @@ export default function PackagesPage() {
     const fetchAll = async () => {
       setLoadingPackages(true)
       try {
-        const [pRes, iRes] = await Promise.all([fetch('/api/packages'), fetch('/api/items')])
+        const [pRes, iRes] = await Promise.all([fetch("/api/packages"), fetch("/api/items")])
         const pJson = await pRes.json()
         const iJson = await iRes.json()
         if (pJson.success) {
@@ -97,7 +99,7 @@ export default function PackagesPage() {
           setMenuItems((iJson.data || []).map((it: any) => apiMenuItemToUI(it)))
         }
       } catch (e) {
-        console.error('Failed to load packages/items', e)
+        console.error("Failed to load packages/items", e)
       } finally {
         setLoadingPackages(false)
       }
@@ -106,8 +108,7 @@ export default function PackagesPage() {
     fetchAll()
   }, [])
 
-  // Filter to show only Active packages
-  const activePackagesData = packagesData.filter(p => p.status === 'Active')
+  const activePackagesData = packagesData.filter((p) => p.status === "Active")
 
   useEffect(() => {
     const handleScroll = () => {
@@ -153,7 +154,6 @@ export default function PackagesPage() {
   const handleMenuItemToggle = (itemId: string) => {
     setSelectedMenuItems((prev) => {
       const newItems = prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
-      // Calculate price based on selected items
       const basePrice = selectedPackage?.minPrice || 0
       const additionalPrice = newItems.reduce((sum, id) => {
         const item = menuItems.find((m) => m.id === id)
@@ -168,7 +168,6 @@ export default function PackagesPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
@@ -241,7 +240,6 @@ export default function PackagesPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="relative w-full pt-20 md:pt-24 pb-2 md:pb-4 overflow-hidden bg-background">
         <div className="absolute inset-0 z-0">
           <Image src="/images/background.png" alt="Background" fill className="object-cover" priority />
@@ -297,9 +295,9 @@ export default function PackagesPage() {
                     <p className="text-2xl font-mochiy text-primary">{pkg.priceRange}</p>
                   </div>
 
-                  {/* Included Items */}
+                  {/* Inclusions */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-mochiy text-primary mb-3">Included Items:</h4>
+                    <h4 className="text-sm font-mochiy text-primary mb-3">Inclusions:</h4>
                     <ul className="space-y-2">
                       {pkg.inclusions.slice(0, 3).map((item, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs font-archivo text-foreground/80">
@@ -314,6 +312,37 @@ export default function PackagesPage() {
                       )}
                     </ul>
                   </div>
+
+                  {(pkg.mainDish.length > 0 ||
+                    pkg.appetizer.length > 0 ||
+                    pkg.dessert.length > 0 ||
+                    pkg.beverage.length > 0) && (
+                    <div className="mb-6 pb-6 border-t border-border pt-6">
+                      <h4 className="text-sm font-mochiy text-primary mb-3">Menu Items:</h4>
+                      <div className="space-y-2 text-xs">
+                        {pkg.mainDish.length > 0 && (
+                          <p>
+                            <span className="font-semibold">Main Dish:</span> {pkg.mainDish.join(", ")}
+                          </p>
+                        )}
+                        {pkg.appetizer.length > 0 && (
+                          <p>
+                            <span className="font-semibold">Appetizer:</span> {pkg.appetizer.join(", ")}
+                          </p>
+                        )}
+                        {pkg.dessert.length > 0 && (
+                          <p>
+                            <span className="font-semibold">Dessert:</span> {pkg.dessert.join(", ")}
+                          </p>
+                        )}
+                        {pkg.beverage.length > 0 && (
+                          <p>
+                            <span className="font-semibold">Beverage:</span> {pkg.beverage.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Buttons */}
                   <div className="flex gap-3">
@@ -367,7 +396,7 @@ export default function PackagesPage() {
               </div>
 
               <div>
-                <h3 className="text-lg font-mochiy text-primary mb-3">Included Items</h3>
+                <h3 className="text-lg font-mochiy text-primary mb-3">Inclusions</h3>
                 <ul className="space-y-2">
                   {selectedPackage.inclusions.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
@@ -377,6 +406,57 @@ export default function PackagesPage() {
                   ))}
                 </ul>
               </div>
+
+              {(selectedPackage.mainDish.length > 0 ||
+                selectedPackage.appetizer.length > 0 ||
+                selectedPackage.dessert.length > 0 ||
+                selectedPackage.beverage.length > 0) && (
+                <div className="border-t border-border pt-6">
+                  <h3 className="text-lg font-mochiy text-primary mb-3">Menu Items</h3>
+                  <div className="space-y-3 text-sm font-archivo">
+                    {selectedPackage.mainDish.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-primary mb-1">Main Dishes:</p>
+                        <ul className="space-y-1 ml-4">
+                          {selectedPackage.mainDish.map((item, i) => (
+                            <li key={i}>• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedPackage.appetizer.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-primary mb-1">Appetizers:</p>
+                        <ul className="space-y-1 ml-4">
+                          {selectedPackage.appetizer.map((item, i) => (
+                            <li key={i}>• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedPackage.dessert.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-primary mb-1">Desserts:</p>
+                        <ul className="space-y-1 ml-4">
+                          {selectedPackage.dessert.map((item, i) => (
+                            <li key={i}>• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedPackage.beverage.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-primary mb-1">Beverages:</p>
+                        <ul className="space-y-1 ml-4">
+                          {selectedPackage.beverage.map((item, i) => (
+                            <li key={i}>• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="pt-4 border-t border-border flex gap-3">
                 <button
@@ -488,52 +568,39 @@ export default function PackagesPage() {
                 alt="EvenTory Logo"
                 width={160}
                 height={60}
-                className="mb-3 mx-auto md:mx-0 brightness-0 invert"
+                className="h-10 w-auto mb-4"
               />
-              <p className="text-primary-foreground/90 text-sm leading-relaxed">
-                Quality Filipino and Bicolano Catering Services
-              </p>
+              <p className="text-sm opacity-90">Your trusted catering partner for unforgettable events.</p>
             </div>
-
             <div>
-              <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm opacity-90">
                 <li>
-                  <Link href="/menu" className="hover:text-primary-foreground/70 transition">
+                  <Link href="/menu" className="hover:opacity-100 transition-opacity">
                     Menu
                   </Link>
                 </li>
                 <li>
-                  <Link href="/packages" className="hover:text-primary-foreground/70 transition">
+                  <Link href="/packages" className="hover:opacity-100 transition-opacity">
                     Packages
                   </Link>
                 </li>
                 <li>
-                  <Link href="/book" className="hover:text-primary-foreground/70 transition">
+                  <Link href="/book" className="hover:opacity-100 transition-opacity">
                     Book Now
                   </Link>
                 </li>
-                <li>
-                  <Link href="/feedback" className="hover:text-primary-foreground/70 transition">
-                    Feedback
-                  </Link>
-                </li>
               </ul>
             </div>
-
             <div>
-              <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Contact Us</h4>
-              <ul className="space-y-2 text-sm text-primary-foreground/90">
-                <li>Bicol Region, Philippines</li>
-                <li>+63 912 345 6789</li>
-                <li>info@eventory.com</li>
-              </ul>
+              <h4 className="font-semibold mb-4">Contact Us</h4>
+              <p className="text-sm opacity-90">Email: info@eventory.com</p>
+              <p className="text-sm opacity-90">Phone: +1 (555) 123-4567</p>
             </div>
           </div>
-
-          <hr className="border-primary-foreground/20 mb-6" />
-
-          <div className="text-center text-xs text-primary-foreground/70">© 2025 EvenTory. All rights reserved.</div>
+          <div className="border-t border-primary-foreground/20 pt-8 text-center text-sm opacity-75">
+            <p>&copy; 2025 EvenTory. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </main>
