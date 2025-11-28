@@ -81,7 +81,7 @@ export default function PackagesPage() {
   const [selectedMenuItems, setSelectedMenuItems] = useState<string[]>([])
   const [customPrice, setCustomPrice] = useState(0)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(["main-dishes", "appetizers", "desserts", "beverages"]),
+    new Set(),
   )
 
   const [packagesData, setPackagesData] = useState<Package[]>([])
@@ -479,7 +479,7 @@ export default function PackagesPage() {
                         >
                           <span className="font-semibold text-primary">Beverages</span>
                           <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("beverages") ? "−" : "+"}
+                            {expandedCategories.has("beverages") ? "-" : "+"}
                           </span>
                         </button>
                         {expandedCategories.has("beverages") && (
