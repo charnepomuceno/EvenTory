@@ -45,6 +45,7 @@ export default function PackagesPage() {
 
   const getTierColor = (tier: string) => {
     switch (tier) {
+      case "Casual":
       case "Formal":
       case "Social":
       case "Professional":
