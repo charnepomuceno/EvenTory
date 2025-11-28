@@ -80,9 +80,7 @@ export default function PackagesPage() {
   const [showCustomizeModal, setShowCustomizeModal] = useState(false)
   const [selectedMenuItems, setSelectedMenuItems] = useState<string[]>([])
   const [customPrice, setCustomPrice] = useState(0)
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(),
-  )
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
   const [packagesData, setPackagesData] = useState<Package[]>([])
   const [loadingPackages, setLoadingPackages] = useState(false)
@@ -364,7 +362,7 @@ export default function PackagesPage() {
               <button
                 onClick={() => setShowDetailsModal(false)}
                 title="Close package details modal"
-                className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                className="p-2 hover:bg-secondary rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-foreground" />
               </button>
@@ -401,97 +399,57 @@ export default function PackagesPage() {
                 selectedPackage.beverage.length > 0) && (
                 <div className="border-t border-border pt-6">
                   <h3 className="text-lg font-mochiy text-primary mb-3">Menu Items</h3>
-                  <div className="space-y-3 text-sm font-archivo">
+                  <div className="space-y-4">
                     {selectedPackage.mainDish.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("main-dishes")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-                        >
-                          <span className="font-semibold text-primary">Main Dishes</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("main-dishes") ? "−" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("main-dishes") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.mainDish.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Main Dishes</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.mainDish.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                     {selectedPackage.appetizer.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("appetizers")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-                        >
-                          <span className="font-semibold text-primary">Appetizers</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("appetizers") ? "−" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("appetizers") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.appetizer.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Appetizers</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.appetizer.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                     {selectedPackage.dessert.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("desserts")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-                        >
-                          <span className="font-semibold text-primary">Desserts</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("desserts") ? "−" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("desserts") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.dessert.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Desserts</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.dessert.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                     {selectedPackage.beverage.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("beverages")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-                        >
-                          <span className="font-semibold text-primary">Beverages</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("beverages") ? "-" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("beverages") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.beverage.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Beverages</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.beverage.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
@@ -501,13 +459,13 @@ export default function PackagesPage() {
               <div className="pt-4 border-t border-border flex gap-3">
                 <button
                   onClick={() => setShowDetailsModal(false)}
-                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors"
+                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors cursor-pointer"
                 >
                   Close
                 </button>
                 <button
                   onClick={handleConfirmPackage}
-                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors"
+                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors cursor-pointer"
                 >
                   Confirm Package
                 </button>
@@ -525,7 +483,7 @@ export default function PackagesPage() {
               <button
                 onClick={() => setShowCustomizeModal(false)}
                 title="Close customize package modal"
-                className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                className="p-2 hover:bg-secondary rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-foreground" />
               </button>
@@ -538,100 +496,60 @@ export default function PackagesPage() {
                 selectedPackage.beverage.length > 0) && (
                 <div>
                   <h3 className="text-lg font-mochiy text-primary mb-4">Package Menu Items</h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {selectedPackage.mainDish.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("main-dishes")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors bg-secondary/30"
-                        >
-                          <span className="font-semibold text-primary">Main Dishes</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("main-dishes") ? "−" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("main-dishes") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.mainDish.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Main Dishes</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.mainDish.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
 
                     {selectedPackage.appetizer.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("appetizers")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors bg-secondary/30"
-                        >
-                          <span className="font-semibold text-primary">Appetizers</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("appetizers") ? "−" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("appetizers") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.appetizer.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Appetizers</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.appetizer.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
 
                     {selectedPackage.dessert.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("desserts")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors bg-secondary/30"
-                        >
-                          <span className="font-semibold text-primary">Desserts</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("desserts") ? "−" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("desserts") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.dessert.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Desserts</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.dessert.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
 
                     {selectedPackage.beverage.length > 0 && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleCategory("beverages")}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors bg-secondary/30"
-                        >
-                          <span className="font-semibold text-primary">Beverages</span>
-                          <span className="text-sm text-foreground/70">
-                            {expandedCategories.has("beverages") ? "−" : "+"}
-                          </span>
-                        </button>
-                        {expandedCategories.has("beverages") && (
-                          <div className="bg-secondary/20 p-4 space-y-2 border-t border-border">
-                            {selectedPackage.beverage.map((item, i) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Beverages</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.beverage.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
@@ -655,10 +573,10 @@ export default function PackagesPage() {
                       <div key={category} className="border border-border rounded-lg overflow-hidden">
                         <button
                           onClick={() => toggleCategory(categoryKey)}
-                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors bg-secondary/30"
+                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors bg-secondary/30 cursor-pointer"
                         >
                           <span className="font-semibold text-primary">{category}s</span>
-                          <span className="text-sm text-foreground/70">{isExpanded ? "−" : "+"}</span>
+                          <span className="text-sm text-foreground/70">{isExpanded ? "-" : "+"}</span>
                         </button>
                         {isExpanded && (
                           <div className="p-4 space-y-3 border-t border-border">
@@ -696,13 +614,13 @@ export default function PackagesPage() {
               <div className="pt-4 border-t border-border flex gap-3">
                 <button
                   onClick={() => setShowCustomizeModal(false)}
-                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors"
+                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors cursor-pointer"
                 >
                   Close
                 </button>
                 <button
                   onClick={handleConfirmPackage}
-                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors"
+                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors cursor-pointer"
                 >
                   Confirm Package
                 </button>
@@ -714,49 +632,70 @@ export default function PackagesPage() {
 
       {/* Footer */}
       <footer className="bg-accent text-primary-foreground py-16 md:py-20 font-archivo">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-12 text-center md:text-left">
-            <div>
-              <Image
-                src="/images/eventory.png"
-                alt="EvenTory Logo"
-                width={160}
-                height={60}
-                className="h-10 w-auto mb-4"
-              />
-              <p className="text-sm opacity-90">Your trusted catering partner for unforgettable events.</p>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {/* Top Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-12 text-center md:text-left">
+                {/* Brand Section */}
+                <div>
+                  <Image
+                    src="/images/eventory.png"
+                    alt="EvenTory Logo"
+                    width={160}
+                    height={60}
+                    className="mb-3 mx-auto md:mx-0 brightness-0 invert"
+                  />
+                  <p className="text-primary-foreground/90 text-sm leading-relaxed">
+                    Quality Filipino and Bicolano Catering Services
+                  </p>
+                </div>
+      
+                {/* Quick Links */}
+                <div>
+                  <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Menu
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Packages
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Book Now
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Feedback
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+      
+                {/* Contact Info */}
+                <div>
+                  <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Contact Us</h4>
+                  <ul className="space-y-2 text-sm text-primary-foreground/90">
+                    <li>Bicol Region, Philippines</li>
+                    <li>+63 912 345 6789</li>
+                    <li>info@eventory.com</li>
+                  </ul>
+                </div>
+              </div>
+      
+              {/* Divider */}
+              <hr className="border-primary-foreground/20 mb-6" />
+      
+              {/* Copyright */}
+              <div className="text-center text-xs text-primary-foreground/70">
+                © 2025 EvenTory. All rights reserved.
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm opacity-90">
-                <li>
-                  <Link href="/menu" className="hover:opacity-100 transition-opacity">
-                    Menu
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/packages" className="hover:opacity-100 transition-opacity">
-                    Packages
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/book" className="hover:opacity-100 transition-opacity">
-                    Book Now
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact Us</h4>
-              <p className="text-sm opacity-90">Email: info@eventory.com</p>
-              <p className="text-sm opacity-90">Phone: +1 (555) 123-4567</p>
-            </div>
-          </div>
-          <div className="border-t border-primary-foreground/20 pt-8 text-center text-sm opacity-75">
-            <p>&copy; 2025 EvenTory. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+          </footer>
     </main>
   )
 }
