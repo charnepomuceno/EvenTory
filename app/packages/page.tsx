@@ -361,10 +361,7 @@ export default function PackagesPage() {
                     <span className="font-semibold">Guest Range:</span> {selectedPackage.guestRange}
                   </p>
                   <p>
-                    <span className="font-semibold">Meal Courses:</span> {selectedPackage.mealCourses}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Price Range:</span> {selectedPackage.priceRange}
+                    <span className="font-semibold">Price per Head:</span> {selectedPackage.priceRange}
                   </p>
                 </div>
               </div>

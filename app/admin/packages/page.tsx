@@ -21,10 +21,10 @@ export default function PackagesPage() {
   const [packages, setPackages] = useState<PackageType[]>([])
   const [loading, setLoading] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({ name: "", tier: "Popular", status: "Active", guests: "", price: "", items: "", description: "" })
+  const [form, setForm] = useState({ name: "", tier: "Type of Event", status: "Active", guests: "", price: "", items: "", description: "" })
   const [showEdit, setShowEdit] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ name: "", tier: "Popular", status: "Active", guests: "", price: "", items: "", description: "" })
+  const [editForm, setEditForm] = useState({ name: "", tier: "Type of Event", status: "Active", guests: "", price: "", items: "", description: "" })
 
   const fetchPackages = async () => {
     setLoading(true)
@@ -45,9 +45,9 @@ export default function PackagesPage() {
 
   const getTierColor = (tier: string) => {
     switch (tier) {
-      case "Premium":
-      case "Popular":
-      case "Business":
+      case "Formal":
+      case "Social":
+      case "Professional":
         return "bg-slate-900 text-white"
       default:
         return "bg-slate-900 text-white"
@@ -70,7 +70,7 @@ export default function PackagesPage() {
       const json = await res.json()
       if (json.success) {
         setShowCreate(false)
-        setForm({ name: "", tier: "Popular", status: "Active", guests: "", price: "", items: "", description: "" })
+        setForm({ name: "", tier: "Type of Event", status: "Active", guests: "", price: "", items: "", description: "" })
         fetchPackages()
       } else {
         console.error(json.error)
@@ -212,9 +212,10 @@ export default function PackagesPage() {
             <div className="grid grid-cols-2 gap-3">
               <input required placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border px-3 py-2 rounded" />
               <select value={form.tier} onChange={(e) => setForm({ ...form, tier: e.target.value })} className="border px-3 py-2 rounded">
-                <option>Premium</option>
-                <option>Popular</option>
-                <option>Business</option>
+                <option>Casual</option>
+                <option>Formal</option>
+                <option>Social</option>
+                <option>Professional</option>
               </select>
               <input required placeholder="Guests" value={form.guests} onChange={(e) => setForm({ ...form, guests: e.target.value })} className="border px-3 py-2 rounded" />
               <input required placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="border px-3 py-2 rounded" />
@@ -242,9 +243,10 @@ export default function PackagesPage() {
             <div className="grid grid-cols-2 gap-3">
               <input required placeholder="Name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="border px-3 py-2 rounded" />
               <select value={editForm.tier} onChange={(e) => setEditForm({ ...editForm, tier: e.target.value })} className="border px-3 py-2 rounded">
-                <option>Premium</option>
-                <option>Popular</option>
-                <option>Business</option>
+                <option>Casual</option>
+                <option>Formal</option>
+                <option>Social</option>
+                <option>Professional</option>
               </select>
               <input required placeholder="Guests" value={editForm.guests} onChange={(e) => setEditForm({ ...editForm, guests: e.target.value })} className="border px-3 py-2 rounded" />
               <input required placeholder="Price" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} className="border px-3 py-2 rounded" />
