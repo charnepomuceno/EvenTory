@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
+import { ArrowUp } from "lucide-react"
 
 interface MenuItem {
   _id: string
@@ -12,9 +13,10 @@ interface MenuItem {
   price: number
   description?: string
   image?: string
+  status?: string
 }
 
-const emptyMenuData: Record<string, MenuItem[]> = { 'main-dishes': [], desserts: [], beverages: [], appetizers: [] }
+const emptyMenuData: Record<string, MenuItem[]> = { "main-dishes": [], desserts: [], beverages: [], appetizers: [] }
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -152,15 +154,13 @@ function MenuItem({ item }: { item: MenuItem }) {
 
       <div className="p-5 md:p-6">
         <div className="flex items-start justify-between gap-3 mb-2">
-          <h3 className="text-lg md:text-xl font-mochiy text-primary">{item.name}</h3>
-          <span className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-xs font-medium font-archivo whitespace-nowrap">
-            {item.category}
-          </span>
+          <div className="flex-1">
+            <div className="flex items-baseline gap-3">
+              <h3 className="text-sm md:text-base font-mochiy text-primary">{item.name}</h3>
+              <span className="text-destructive text-base md:text-lg font-mochiy font-archivo">₱{item.price}</span>
+            </div>
+          </div>
         </div>
-
-        <p className="text-foreground/70 text-sm font-archivo mb-4 line-clamp-2">{item.description}</p>
-
-        <div className="text-destructive text-xl md:text-2xl font-mochiy">{item.price}</div>
       </div>
     </div>
   )
@@ -169,6 +169,7 @@ function MenuItem({ item }: { item: MenuItem }) {
 export default function MenuPage() {
   const [activeTab, setActiveTab] = useState("main-dishes")
   const [isScrolled, setIsScrolled] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
 
   const [menuItems, setMenuItems] = useState<Record<string, MenuItem[]>>(emptyMenuData)
   const [loadingItems, setLoadingItems] = useState(false)
@@ -177,36 +178,39 @@ export default function MenuPage() {
     const fetchItems = async () => {
       setLoadingItems(true)
       try {
-        const res = await fetch('/api/items')
+        const res = await fetch("/api/items")
         const json = await res.json()
         if (json.success) {
-          const items: MenuItem[] = json.data.map((it: any) => ({
-            _id: it._id,
-            name: it.name,
-            category: it.category,
-            price: it.price || 0,
-            description: it.description || '',
-            image: it.image || '',
-          }))
+          const items: MenuItem[] = json.data
+            .filter((it: any) => it.status !== "Unavailable")
+            .map((it: any) => ({
+              _id: it._id,
+              name: it.name,
+              category: it.category,
+              price: it.price || 0,
+              description: it.description || "",
+              image: it.image || "",
+              status: it.status || "Available",
+            }))
 
-          const grouped: Record<string, MenuItem[]> = { 'main-dishes': [], desserts: [], beverages: [], appetizers: [] }
+          const grouped: Record<string, MenuItem[]> = { "main-dishes": [], desserts: [], beverages: [], appetizers: [] }
           items.forEach((it) => {
             switch (it.category) {
-              case 'Main Dish':
-                grouped['main-dishes'].push(it)
+              case "Main Dish":
+                grouped["main-dishes"].push(it)
                 break
-              case 'Dessert':
-                grouped['desserts'].push(it)
+              case "Dessert":
+                grouped["desserts"].push(it)
                 break
-              case 'Beverage':
-                grouped['beverages'].push(it)
+              case "Beverage":
+                grouped["beverages"].push(it)
                 break
-              case 'Appetizer':
-              case 'Side Dish':
-                grouped['appetizers'].push(it)
+              case "Appetizer":
+              case "Side Dish":
+                grouped["appetizers"].push(it)
                 break
               default:
-                grouped['main-dishes'].push(it)
+                grouped["main-dishes"].push(it)
             }
           })
 
@@ -224,11 +228,23 @@ export default function MenuPage() {
 
   useEffect(() => {
     const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
+      const scrolled = window.scrollY
+      const scrollPercentage = (scrolled / scrollHeight) * 100
+
       setIsScrolled(window.scrollY > 50)
+      setShowScrollTop(scrollPercentage > 20)
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
+  }
 
   const tabs = [
     { id: "main-dishes", label: "Main Dishes" },
@@ -287,9 +303,9 @@ export default function MenuPage() {
             ))}
           </div>
 
-          {/* Menu Items Grid */}
+          {/* Menu Items Grid - updated to 4 columns on desktop */}
           <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-24 opacity-0 animate-fade-in"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-16 md:mb-24 opacity-0 animate-fade-in"
             style={{ animationDelay: "0.6s" }}
           >
             {(menuItems[activeTab] || []).map((item) => (
@@ -319,6 +335,16 @@ export default function MenuPage() {
           </div>
         </div>
       </section>
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-40 p-3 bg-accent text-primary-foreground rounded-full shadow-lg hover:bg-accent/90 transition-all duration-300 animate-fade-in"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
 
       {/* Footer */}
       <footer className="bg-accent text-primary-foreground py-16 md:py-20 font-archivo">

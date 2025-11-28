@@ -5,8 +5,8 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname, useRouter } from 'next/navigation'
-import { Calendar } from 'lucide-react'
+import { usePathname, useRouter } from "next/navigation"
+import { Calendar } from "lucide-react"
 
 export default function BookPage() {
   const pathname = usePathname()
@@ -18,7 +18,7 @@ export default function BookPage() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
   const [showCalendar, setShowCalendar] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9))
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<number | null>(null)
 
   const dateStatuses = {
@@ -39,6 +39,7 @@ export default function BookPage() {
     eventLocation: "",
     preferredPackage: "",
     specialRequests: "",
+    paymentMethod: "",
   })
 
   useEffect(() => {
@@ -70,7 +71,6 @@ export default function BookPage() {
 
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
-
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -178,6 +178,11 @@ export default function BookPage() {
       setError("Number of Guests is required")
       return
     }
+    const guestCount = Number.parseInt(formData.numberOfGuests, 10)
+    if (isNaN(guestCount) || guestCount < 30) {
+      setError("Number of Guests must be at least 30")
+      return
+    }
     if (!formData.eventDate) {
       setError("Event Date is required")
       return
@@ -188,6 +193,10 @@ export default function BookPage() {
     }
     if (!formData.preferredPackage.trim()) {
       setError("Preferred Package is required. Please select a package from the Packages page first.")
+      return
+    }
+    if (!formData.paymentMethod) {
+      setError("Payment Method is required")
       return
     }
 
@@ -215,6 +224,7 @@ export default function BookPage() {
         eventLocation: "",
         preferredPackage: "",
         specialRequests: "",
+        paymentMethod: "",
       })
     }, 1000)
   }
@@ -450,7 +460,8 @@ export default function BookPage() {
                         name="numberOfGuests"
                         value={formData.numberOfGuests}
                         onChange={handleInputChange}
-                        placeholder="e.g., 50"
+                        min="30"
+                        placeholder="min. 30"
                         className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground placeholder:text-foreground/50 font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50"
                       />
                     </div>
@@ -582,6 +593,25 @@ export default function BookPage() {
                       className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground placeholder:text-foreground/50 font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none"
                       rows={5}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-foreground font-archivo text-sm mb-2">
+                      Payment Method <span className="text-destructive">*</span>
+                    </label>
+                    <select
+                      aria-label="Payment Method"
+                      name="paymentMethod"
+                      value={formData.paymentMethod}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
+                    >
+                      <option value="">Select payment method</option>
+                      <option value="credit-card">Credit Card</option>
+                      <option value="debit-card">Debit Card</option>
+                      <option value="bank-transfer">Bank Transfer</option>
+                      <option value="gcash">GCash</option>
+                    </select>
                   </div>
                 </div>
               </div>
