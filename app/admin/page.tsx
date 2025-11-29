@@ -1,5 +1,3 @@
-"use client"
-
 import { Calendar, Users, Star, TrendingUp, Package } from "lucide-react"
 
 export default function AdminDashboard() {

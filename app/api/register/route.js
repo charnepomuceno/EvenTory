@@ -1,5 +1,5 @@
-import { dbConnect } from "@/lib/db"
-import { User } from "@/lib/models/User"
+import dbConnect from "@/lib/db"
+import User from "@/lib/models/User"
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 
@@ -34,13 +34,16 @@ export async function POST(request) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const newUser = new User({
+    const userData = {
       fullName: fullName.trim(),
-      phoneNumber: registrationType === "phone" ? phoneNumber.trim() : null,
-      email: registrationType === "email" ? email.trim() : null,
       password: hashedPassword,
       registrationType,
-    })
+    }
+
+    if (registrationType === "phone") userData.phoneNumber = phoneNumber.trim()
+    if (registrationType === "email") userData.email = email.trim()
+
+    const newUser = new User(userData)
 
     await newUser.save()
 

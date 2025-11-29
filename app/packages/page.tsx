@@ -3,7 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { X, Check } from "lucide-react"
+import { X, Check, Users, Wallet } from "lucide-react"
 
 interface Package {
   id: string
@@ -16,6 +16,11 @@ interface Package {
   minPrice: number
   maxPrice: number
   inclusions: string[]
+  mainDish: string[]
+  appetizer: string[]
+  dessert: string[]
+  beverage: string[]
+  status?: string
 }
 
 interface MenuItem {
@@ -26,147 +31,45 @@ interface MenuItem {
   description: string
 }
 
-const packages: Package[] = [
-  {
-    id: "wedding",
-    name: "Wedding Elegance Package",
-    badge: "Premium",
-    description:
-      "Create magical memories with our premium wedding catering service featuring traditional Filipino and modern fusion dishes.",
-    guestRange: "50-100 guests",
-    mealCourses: "5-course meal",
-    priceRange: "₱35,000 - ₱50,000",
-    minPrice: 35000,
-    maxPrice: 50000,
-    inclusions: [
-      "Welcome drinks and appetizers",
-      "Main course buffet with 8 dishes",
-      "Dessert station with traditional Filipino sweets",
-      "Professional service staff",
-      "Elegant table setup and decorations",
-      "Complimentary wedding cake",
-    ],
-  },
-  {
-    id: "birthday",
-    name: "Birthday Celebration Package",
-    badge: "Popular",
-    description:
-      "Make birthdays extra special with our vibrant and delicious party catering featuring Filipino favorites.",
-    guestRange: "30-50 guests",
-    mealCourses: "3-course meal",
-    priceRange: "₱15,000 - ₱25,000",
-    minPrice: 15000,
-    maxPrice: 25000,
-    inclusions: [
-      "Party platters and finger foods",
-      "Main course buffet with 5 dishes",
-      "Dessert selection including leche flan",
-      "Beverage station with fresh juices",
-      "Festive table decorations",
-      "Complimentary birthday cake",
-    ],
-  },
-  {
-    id: "corporate",
-    name: "Corporate Event Package",
-    badge: "Business",
-    description:
-      "Impress your colleagues and clients with professional catering service perfect for meetings and corporate gatherings.",
-    guestRange: "40-80 guests",
-    mealCourses: "4-course meal",
-    priceRange: "₱20,000 - ₱35,000",
-    minPrice: 20000,
-    maxPrice: 35000,
-    inclusions: [
-      "Coffee and snack station",
-      "Buffet-style lunch or dinner with 6 dishes",
-      "Vegetarian and special diet options",
-      "Professional serving staff",
-      "Clean and efficient setup",
-      "Complimentary coffee and tea service",
-    ],
-  },
-  {
-    id: "intimate",
-    name: "Intimate Gathering Package",
-    badge: "Cozy",
-    description:
-      "Perfect for small family reunions, baptisms, or intimate celebrations with authentic Bicolano flavors.",
-    guestRange: "15-25 guests",
-    mealCourses: "3-course meal",
-    priceRange: "₱8,000 - ₱12,000",
-    minPrice: 8000,
-    maxPrice: 12000,
-    inclusions: [
-      "Welcome snacks and drinks",
-      "Home-style buffet with 4 signature dishes",
-      "Traditional Bicolano specialties",
-      "Dessert platter",
-      "Basic table setup",
-      "Friendly service staff",
-    ],
-  },
-]
+const apiPackageToUI = (p: any): Package => {
+  const priceRange = p.price || ""
 
-const menuItems: MenuItem[] = [
-  {
-    id: "bicol-express",
-    name: "Bicol Express",
-    category: "Main Dishes",
-    price: 350,
-    description: "Spicy pork in coconut milk with chili peppers",
-  },
-  {
-    id: "laing",
-    name: "Laing",
-    category: "Main Dishes",
-    price: 280,
-    description: "Taro leaves cooked in coconut milk with shrimp",
-  },
-  {
-    id: "lechon-kawali",
-    name: "Lechon Kawali",
-    category: "Main Dishes",
-    price: 400,
-    description: "Crispy deep-fried pork belly",
-  },
-  {
-    id: "kare-kare",
-    name: "Kare-Kare",
-    category: "Main Dishes",
-    price: 420,
-    description: "Oxtail and vegetables in peanut sauce",
-  },
-  {
-    id: "pinakbet",
-    name: "Pinakbet",
-    category: "Main Dishes",
-    price: 250,
-    description: "Mixed vegetables with shrimp paste",
-  },
-  {
-    id: "chicken-adobo",
-    name: "Chicken Adobo",
-    category: "Main Dishes",
-    price: 320,
-    description: "Chicken marinated in soy sauce and vinegar",
-  },
-  {
-    id: "sinigang",
-    name: "Sinigang na Baboy",
-    category: "Main Dishes",
-    price: 380,
-    description: "Pork in tamarind soup",
-  },
-  {
-    id: "pancit-canton",
-    name: "Pancit Canton",
-    category: "Main Dishes",
-    price: 300,
-    description: "Stir-fried noodles with vegetables and meat",
-  },
-]
+  const parseMin = (pr: string) => {
+    try {
+      const digits = pr.replace(/[^0-9-]/g, "").split("-")
+      const num = Number(digits[0]) || 0
+      return num
+    } catch (e) {
+      return 0
+    }
+  }
+
+  return {
+    id: p._id || String(Math.random()),
+    name: p.name || "",
+    badge: p.tier || p.status || "",
+    description: p.description || "",
+    guestRange: p.guests || "",
+    mealCourses: "",
+    priceRange: priceRange,
+    minPrice: parseMin(priceRange),
+    maxPrice: 0,
+    inclusions: Array.isArray(p.inclusions) ? p.inclusions : [],
+    mainDish: Array.isArray(p.mainDish) ? p.mainDish : [],
+    appetizer: Array.isArray(p.appetizer) ? p.appetizer : [],
+    dessert: Array.isArray(p.dessert) ? p.dessert : [],
+    beverage: Array.isArray(p.beverage) ? p.beverage : [],
+    status: p.status || "Active",
+  }
+}
+
+const apiMenuItemToUI = (it: any): MenuItem => ({
+  id: it._id,
+  name: it.name,
+  category: it.category,
+  price: it.price || 0,
+  description: it.description || "",
+})
 
 export default function PackagesPage() {
   const pathname = usePathname()
@@ -177,6 +80,36 @@ export default function PackagesPage() {
   const [showCustomizeModal, setShowCustomizeModal] = useState(false)
   const [selectedMenuItems, setSelectedMenuItems] = useState<string[]>([])
   const [customPrice, setCustomPrice] = useState(0)
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+
+  const [packagesData, setPackagesData] = useState<Package[]>([])
+  const [loadingPackages, setLoadingPackages] = useState(false)
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoadingPackages(true)
+      try {
+        const [pRes, iRes] = await Promise.all([fetch("/api/packages"), fetch("/api/items")])
+        const pJson = await pRes.json()
+        const iJson = await iRes.json()
+        if (pJson.success) {
+          setPackagesData((pJson.data || []).map((p: any) => apiPackageToUI(p)))
+        }
+        if (iJson.success) {
+          setMenuItems((iJson.data || []).map((it: any) => apiMenuItemToUI(it)))
+        }
+      } catch (e) {
+        console.error("Failed to load packages/items", e)
+      } finally {
+        setLoadingPackages(false)
+      }
+    }
+
+    fetchAll()
+  }, [])
+
+  const activePackagesData = packagesData.filter((p) => p.status === "Active")
 
   useEffect(() => {
     const handleScroll = () => {
@@ -222,7 +155,6 @@ export default function PackagesPage() {
   const handleMenuItemToggle = (itemId: string) => {
     setSelectedMenuItems((prev) => {
       const newItems = prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
-      // Calculate price based on selected items
       const basePrice = selectedPackage?.minPrice || 0
       const additionalPrice = newItems.reduce((sum, id) => {
         const item = menuItems.find((m) => m.id === id)
@@ -235,9 +167,30 @@ export default function PackagesPage() {
 
   const isActive = (href: string) => pathname === href
 
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case "Casual":
+      case "Formal":
+      case "Social":
+      case "Professional":
+        return "bg-secondary text-primary"
+      default:
+        return "bg-secondary text-primary"
+    }
+  }
+
+  const toggleCategory = (category: string) => {
+    const newExpanded = new Set(expandedCategories)
+    if (newExpanded.has(category)) {
+      newExpanded.delete(category)
+    } else {
+      newExpanded.add(category)
+    }
+    setExpandedCategories(newExpanded)
+  }
+
   return (
     <main className="min-h-screen bg-background">
-      {/* Navbar */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
@@ -310,7 +263,6 @@ export default function PackagesPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="relative w-full pt-20 md:pt-24 pb-2 md:pb-4 overflow-hidden bg-background">
         <div className="absolute inset-0 z-0">
           <Image src="/images/background.png" alt="Background" fill className="object-cover" priority />
@@ -337,69 +289,63 @@ export default function PackagesPage() {
       <section className="pt-2 pb-20 md:pt-4 md:pb-28 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-            {packages.map((pkg, index) => (
+            {activePackagesData.map((pkg, index) => (
               <div
                 key={pkg.id}
-                className="bg-card rounded-2xl shadow-lg overflow-hidden opacity-0 animate-fade-in hover:shadow-xl transition-shadow duration-300"
+                className="bg-white/50 rounded-2xl p-6 shadow-xl border-2 border-gray-100 opacity-0 animate-fade-in hover:shadow-2xl transition-shadow duration-300"
                 style={{ animationDelay: `${0.3 + index * 0.1}s` }}
               >
-                {/* Package Content */}
-                <div className="p-6 md:p-8">
-                  <h3 className="text-2xl font-mochiy text-primary mb-2">{pkg.name}</h3>
-                  <p className="text-foreground/70 text-sm font-archivo mb-4">{pkg.description}</p>
+                {/* Header with Title and Tier Badge */}
+                <div className="flex items-start justify-between mb-4">
+                  <h3 className="text-2xl font-mochiy text-primary">{pkg.name}</h3>
+                  <span className={`${getTierColor(pkg.badge)} px-3 py-1 rounded-full text-sm font-medium`}>
+                    {pkg.badge}
+                  </span>
+                </div>
 
-                  {/* Package Details */}
-                  <div className="space-y-2 mb-6 text-sm font-archivo text-foreground/80">
-                    <div className="flex items-center gap-2">
-                      <span className="text-accent">👥</span>
-                      <span>{pkg.guestRange}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-accent">🍽️</span>
-                      <span>{pkg.mealCourses}</span>
-                    </div>
-                  </div>
+                {/* Description */}
+                {pkg.description && (
+                  <div className="mb-4 text-base font-archivo text-primary line-clamp-2">{pkg.description}</div>
+                )}
 
-                  {/* Price */}
-                  <div className="mb-6 pb-6 border-b border-border">
-                    <p className="text-2xl font-mochiy text-primary">{pkg.priceRange}</p>
+                {/* Guests and Price with Icons */}
+                <div className="flex justify-between items-center mb-6 pb-6 border-b border-slate-200">
+                  <div className="flex items-center gap-2 text-primary font-archivo text-base">
+                    <Users size={18} />
+                    <span>{pkg.guestRange}</span>
                   </div>
+                  <div className="flex items-center gap-2 text-primary font-mochiy text-base">
+                    <Wallet size={18} />
+                    <span>{pkg.priceRange}</span>
+                  </div>
+                </div>
 
-                  {/* Included Items */}
-                  <div className="mb-6">
-                    <h4 className="text-sm font-mochiy text-primary mb-3">Included Items:</h4>
-                    <ul className="space-y-2">
-                      {pkg.inclusions.slice(0, 3).map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs font-archivo text-foreground/80">
-                          <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                      {pkg.inclusions.length > 3 && (
-                        <li className="text-xs font-archivo text-foreground/60 italic">
-                          +{pkg.inclusions.length - 3} more items
-                        </li>
-                      )}
-                    </ul>
+                {/* Inclusions */}
+                <div className="mb-6">
+                  <p className="font-mochiy text-primary mb-3">Inclusions:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {pkg.inclusions.map((item, idx) => (
+                      <span key={idx} className="bg-accent text-white px-3 py-1 rounded-full text-sm font-medium">
+                        {item}
+                      </span>
+                    ))}
                   </div>
+                </div>
 
-                  {/* Buttons */}
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleBookNow(pkg)}
-                      title="Book this package now"
-                      className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy text-sm hover:bg-accent/90 transition-colors duration-200 cursor-pointer"
-                    >
-                      Book Now
-                    </button>
-                    <button
-                      onClick={() => handleCustomize(pkg)}
-                      title="Customize this package"
-                      className="flex-1 px-4 py-3 border border-accent text-accent rounded-lg font-mochiy text-sm hover:bg-accent/10 transition-colors duration-200 cursor-pointer"
-                    >
-                      Customize
-                    </button>
-                  </div>
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleCustomize(pkg)}
+                    className="flex-1 px-4 py-2 border-2 border-accent text-accent rounded-lg font-medium hover:text-primary hover:border-primary transition-colors cursor-pointer"
+                  >
+                    Customize Package
+                  </button>
+                  <button
+                    onClick={() => handleBookNow(pkg)}
+                    className="flex-1 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:text-primary transition-colors cursor-pointer"
+                  >
+                    View Package
+                  </button>
                 </div>
               </div>
             ))}
@@ -407,6 +353,7 @@ export default function PackagesPage() {
         </div>
       </section>
 
+      {/* ... existing modals code ... */}
       {showDetailsModal && selectedPackage && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-popover rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -415,7 +362,7 @@ export default function PackagesPage() {
               <button
                 onClick={() => setShowDetailsModal(false)}
                 title="Close package details modal"
-                className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                className="p-2 hover:bg-secondary rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-foreground" />
               </button>
@@ -429,16 +376,13 @@ export default function PackagesPage() {
                     <span className="font-semibold">Guest Range:</span> {selectedPackage.guestRange}
                   </p>
                   <p>
-                    <span className="font-semibold">Meal Courses:</span> {selectedPackage.mealCourses}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Price Range:</span> {selectedPackage.priceRange}
+                    <span className="font-semibold">Price per Head:</span> {selectedPackage.priceRange}
                   </p>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-mochiy text-primary mb-3">Included Items</h3>
+                <h3 className="text-lg font-mochiy text-primary mb-3">Inclusions</h3>
                 <ul className="space-y-2">
                   {selectedPackage.inclusions.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
@@ -449,16 +393,79 @@ export default function PackagesPage() {
                 </ul>
               </div>
 
+              {(selectedPackage.mainDish.length > 0 ||
+                selectedPackage.appetizer.length > 0 ||
+                selectedPackage.dessert.length > 0 ||
+                selectedPackage.beverage.length > 0) && (
+                <div className="border-t border-border pt-6">
+                  <h3 className="text-lg font-mochiy text-primary mb-3">Menu Items</h3>
+                  <div className="space-y-4">
+                    {selectedPackage.mainDish.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Main Dishes</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.mainDish.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedPackage.appetizer.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Appetizers</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.appetizer.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedPackage.dessert.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Desserts</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.dessert.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedPackage.beverage.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Beverages</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.beverage.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="pt-4 border-t border-border flex gap-3">
                 <button
                   onClick={() => setShowDetailsModal(false)}
-                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors"
+                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors cursor-pointer"
                 >
                   Close
                 </button>
                 <button
                   onClick={handleConfirmPackage}
-                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors"
+                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors cursor-pointer"
                 >
                   Confirm Package
                 </button>
@@ -476,52 +483,126 @@ export default function PackagesPage() {
               <button
                 onClick={() => setShowCustomizeModal(false)}
                 title="Close customize package modal"
-                className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                className="p-2 hover:bg-secondary rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6 text-foreground" />
               </button>
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
-              <div>
-                <h3 className="text-lg font-mochiy text-primary mb-2">Package Inclusions</h3>
-                <p className="text-sm font-archivo text-foreground/70 mb-4">
-                  This package includes the following items:
-                </p>
-                <div className="bg-secondary/30 p-4 rounded-lg mb-6">
-                  <ul className="space-y-2">
-                    {selectedPackage.inclusions.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
-                        <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              {(selectedPackage.mainDish.length > 0 ||
+                selectedPackage.appetizer.length > 0 ||
+                selectedPackage.dessert.length > 0 ||
+                selectedPackage.beverage.length > 0) && (
+                <div>
+                  <h3 className="text-lg font-mochiy text-primary mb-4">Package Menu Items</h3>
+                  <div className="space-y-4">
+                    {selectedPackage.mainDish.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Main Dishes</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.mainDish.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
+                    {selectedPackage.appetizer.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Appetizers</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.appetizer.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {selectedPackage.dessert.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Desserts</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.dessert.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {selectedPackage.beverage.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Beverages</h4>
+                        <ul className="space-y-2 ml-2">
+                          {selectedPackage.beverage.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm font-archivo text-foreground/80">
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div>
                 <h3 className="text-lg font-mochiy text-primary mb-3">Add Extra Menu Items</h3>
                 <p className="text-sm font-archivo text-foreground/70 mb-4">
                   Select additional dishes to customize your package:
                 </p>
-                <div className="space-y-3">
-                  {menuItems.map((item) => (
-                    <label
-                      key={item.id}
-                      className="flex items-start gap-3 p-3 border border-border rounded-lg hover:bg-secondary/50 cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedMenuItems.includes(item.id)}
-                        onChange={() => handleMenuItemToggle(item.id)}
-                        className="mt-1 w-4 h-4 rounded border-border cursor-pointer"
-                      />
-                      <div className="flex-1">
-                        <p className="font-semibold text-foreground text-sm">{item.name}</p>
-                        <p className="text-xs text-foreground/70 font-archivo">{item.description}</p>
-                        <p className="text-sm font-mochiy text-accent mt-1">₱{item.price}</p>
+                <div className="space-y-4">
+                  {["Main Dish", "Appetizer", "Dessert", "Beverage"].map((category) => {
+                    const categoryItems = menuItems.filter((item) => item.category === category)
+                    if (categoryItems.length === 0) return null
+
+                    const categoryKey = category.toLowerCase().replace(" ", "-") + "s"
+                    const isExpanded = expandedCategories.has(categoryKey)
+
+                    return (
+                      <div key={category} className="border border-border rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => toggleCategory(categoryKey)}
+                          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors bg-secondary/30 cursor-pointer"
+                        >
+                          <span className="font-semibold text-primary">{category}s</span>
+                          <span className="text-sm text-foreground/70">{isExpanded ? "-" : "+"}</span>
+                        </button>
+                        {isExpanded && (
+                          <div className="p-4 space-y-3 border-t border-border">
+                            {categoryItems.map((item) => (
+                              <label
+                                key={item.id}
+                                className="flex items-start gap-3 p-3 border border-border rounded-lg hover:bg-secondary/50 cursor-pointer transition-colors"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedMenuItems.includes(item.id)}
+                                  onChange={() => handleMenuItemToggle(item.id)}
+                                  className="mt-1 w-4 h-4 rounded border-border cursor-pointer"
+                                />
+                                <div className="flex-1">
+                                  <p className="font-semibold text-foreground text-sm">{item.name}</p>
+                                  <p className="text-xs text-foreground/70 font-archivo">{item.description}</p>
+                                  <p className="text-sm font-mochiy text-accent mt-1">₱{item.price}</p>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </label>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
@@ -533,13 +614,13 @@ export default function PackagesPage() {
               <div className="pt-4 border-t border-border flex gap-3">
                 <button
                   onClick={() => setShowCustomizeModal(false)}
-                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors"
+                  className="flex-1 px-4 py-3 border border-border text-foreground rounded-lg font-mochiy hover:bg-secondary transition-colors cursor-pointer"
                 >
                   Close
                 </button>
                 <button
                   onClick={handleConfirmPackage}
-                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors"
+                  className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors cursor-pointer"
                 >
                   Confirm Package
                 </button>
@@ -551,62 +632,70 @@ export default function PackagesPage() {
 
       {/* Footer */}
       <footer className="bg-accent text-primary-foreground py-16 md:py-20 font-archivo">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-12 text-center md:text-left">
-            <div>
-              <Image
-                src="/images/eventory.png"
-                alt="EvenTory Logo"
-                width={160}
-                height={60}
-                className="mb-3 mx-auto md:mx-0 brightness-0 invert"
-              />
-              <p className="text-primary-foreground/90 text-sm leading-relaxed">
-                Quality Filipino and Bicolano Catering Services
-              </p>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {/* Top Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-12 text-center md:text-left">
+                {/* Brand Section */}
+                <div>
+                  <Image
+                    src="/images/eventory.png"
+                    alt="EvenTory Logo"
+                    width={160}
+                    height={60}
+                    className="mb-3 mx-auto md:mx-0 brightness-0 invert"
+                  />
+                  <p className="text-primary-foreground/90 text-sm leading-relaxed">
+                    Quality Filipino and Bicolano Catering Services
+                  </p>
+                </div>
+      
+                {/* Quick Links */}
+                <div>
+                  <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Menu
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Packages
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Book Now
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                        Feedback
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+      
+                {/* Contact Info */}
+                <div>
+                  <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Contact Us</h4>
+                  <ul className="space-y-2 text-sm text-primary-foreground/90">
+                    <li>Bicol Region, Philippines</li>
+                    <li>+63 912 345 6789</li>
+                    <li>info@eventory.com</li>
+                  </ul>
+                </div>
+              </div>
+      
+              {/* Divider */}
+              <hr className="border-primary-foreground/20 mb-6" />
+      
+              {/* Copyright */}
+              <div className="text-center text-xs text-primary-foreground/70">
+                © 2025 EvenTory. All rights reserved.
+              </div>
             </div>
-
-            <div>
-              <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/menu" className="hover:text-primary-foreground/70 transition">
-                    Menu
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/packages" className="hover:text-primary-foreground/70 transition">
-                    Packages
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/book" className="hover:text-primary-foreground/70 transition">
-                    Book Now
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/feedback" className="hover:text-primary-foreground/70 transition">
-                    Feedback
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Contact Us</h4>
-              <ul className="space-y-2 text-sm text-primary-foreground/90">
-                <li>Bicol Region, Philippines</li>
-                <li>+63 912 345 6789</li>
-                <li>info@eventory.com</li>
-              </ul>
-            </div>
-          </div>
-
-          <hr className="border-primary-foreground/20 mb-6" />
-
-          <div className="text-center text-xs text-primary-foreground/70">© 2025 EvenTory. All rights reserved.</div>
-        </div>
-      </footer>
+          </footer>
     </main>
   )
 }
