@@ -28,8 +28,6 @@ export default function BookPage() {
   }
 
   const [selectedPackageInfo, setSelectedPackageInfo] = useState<any>(null)
-  const [packages, setPackages] = useState<any[]>([])
-  const [packagesLoading, setPackagesLoading] = useState(true)
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -49,22 +47,6 @@ export default function BookPage() {
       setIsScrolled(window.scrollY > 50)
     }
     window.addEventListener("scroll", handleScroll)
-
-    // Fetch packages from API
-    const fetchPackages = async () => {
-      try {
-        const response = await fetch("/api/packages")
-        const data = await response.json()
-        if (data.success) {
-          setPackages(data.data || [])
-        }
-      } catch (err) {
-        console.error("Failed to fetch packages:", err)
-      } finally {
-        setPackagesLoading(false)
-      }
-    }
-    fetchPackages()
 
     const storedUser = localStorage.getItem("current_user")
     if (storedUser) {
@@ -621,27 +603,14 @@ export default function BookPage() {
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Preferred Package <span className="text-destructive">*</span>
                     </label>
-                    <select
+                    <input
+                      type="text"
                       name="preferredPackage"
                       value={formData.preferredPackage}
-                      onChange={(e) => {
-                        const selectedName = e.target.value
-                        const selectedPkg = packages.find(p => p.name === selectedName)
-                        setFormData(prev => ({
-                          ...prev,
-                          preferredPackage: selectedName,
-                        }))
-                        setSelectedPackageInfo(selectedPkg || null)
-                      }}
-                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
-                    >
-                      <option value="">Select a package</option>
-                      {packages.map((pkg) => (
-                        <option key={pkg._id || pkg.name} value={pkg.name}>
-                          {pkg.name}
-                        </option>
-                      ))}
-                    </select>
+                      readOnly
+                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none"
+                      placeholder="Please select a package from the Packages page"
+                    />
                   </div>
 
                   <div>
