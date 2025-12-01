@@ -20,14 +20,11 @@ export default function BookPage() {
   const [showCalendar, setShowCalendar] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<number | null>(null)
-
-  const dateStatuses = {
-    available: [1, 3, 4, 5, 6, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 27, 28, 29, 31],
-    booked: [2, 7, 10, 21, 22],
-    pending: [13, 30],
-  }
+  const [bookedDateKeys, setBookedDateKeys] = useState<Set<string>>(new Set())
 
   const [selectedPackageInfo, setSelectedPackageInfo] = useState<any>(null)
+  const [packages, setPackages] = useState<any[]>([])
+  const [isLoadingPackages, setIsLoadingPackages] = useState(false)
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -60,8 +57,10 @@ export default function BookPage() {
     }
 
     const packageData = sessionStorage.getItem("selectedPackage")
+    let initialSelectedPackage: any = null
     if (packageData) {
       const parsed = JSON.parse(packageData)
+      initialSelectedPackage = parsed
       setSelectedPackageInfo(parsed)
       setFormData((prev) => ({
         ...prev,
@@ -69,8 +68,63 @@ export default function BookPage() {
       }))
     }
 
+    const fetchPackages = async () => {
+      try {
+        setIsLoadingPackages(true)
+        const res = await fetch("/api/packages")
+        const data = await res.json()
+
+        if (res.ok && data.success) {
+          const activePackages = data.data.filter((pkg: any) => pkg.status === "Active")
+          setPackages(activePackages)
+
+          // Sync selected package info with admin-defined packages when possible
+          if (initialSelectedPackage && !selectedPackageInfo) {
+            const matched = activePackages.find((pkg: any) => pkg.name === initialSelectedPackage.name)
+            if (matched) {
+              setSelectedPackageInfo(matched)
+            }
+          }
+        } else {
+          console.error("Failed to load packages:", data.error)
+        }
+      } catch (err) {
+        console.error("Error loading packages:", err)
+      } finally {
+        setIsLoadingPackages(false)
+      }
+    }
+
+    const fetchBookedDates = async () => {
+      try {
+        const res = await fetch("/api/bookings")
+        const json = await res.json()
+        if (!res.ok) return
+
+        const keys = new Set<string>()
+        ;(json.bookings || []).forEach((b: any) => {
+          // Skip cancelled bookings
+          if (b.status === "cancelled") return
+          if (!b.event_date) return
+          const d = new Date(b.event_date)
+          if (isNaN(d.getTime())) return
+          const y = d.getFullYear()
+          const m = `${d.getMonth() + 1}`.padStart(2, "0")
+          const day = `${d.getDate()}`.padStart(2, "0")
+          keys.add(`${y}-${m}-${day}`)
+        })
+
+        setBookedDateKeys(keys)
+      } catch (e) {
+        console.error("Failed to load booked dates", e)
+      }
+    }
+
+    fetchPackages()
+    fetchBookedDates()
+
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [selectedPackageInfo])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -103,12 +157,17 @@ export default function BookPage() {
     return checkDate <= today
   }
 
-  const getDateStatus = (day: number): "available" | "booked" | "pending" | "past" => {
+  const getDateStatus = (day: number): "available" | "booked" | "past" => {
     if (isDateInPastOrToday(currentDate.getFullYear(), currentDate.getMonth(), day)) {
       return "past"
     }
-    if (dateStatuses.booked.includes(day)) return "booked"
-    if (dateStatuses.pending.includes(day)) return "pending"
+
+    const y = currentDate.getFullYear()
+    const m = `${currentDate.getMonth() + 1}`.padStart(2, "0")
+    const d = `${day}`.padStart(2, "0")
+    const key = `${y}-${m}-${d}`
+
+    if (bookedDateKeys.has(key)) return "booked"
     return "available"
   }
 
@@ -116,7 +175,6 @@ export default function BookPage() {
     const status = getDateStatus(day)
     if (status === "past") return "bg-gray-100 text-gray-400 cursor-not-allowed"
     if (status === "booked") return "bg-red-100 text-red-700 cursor-not-allowed"
-    if (status === "pending") return "bg-yellow-100 text-yellow-700 cursor-not-allowed"
     return "bg-green-50 text-green-700 hover:bg-green-200 cursor-pointer"
   }
 
@@ -192,7 +250,7 @@ export default function BookPage() {
       return
     }
     if (!formData.preferredPackage.trim()) {
-      setError("Preferred Package is required. Please select a package from the Packages page first.")
+      setError("Preferred Package is required. Please select a package.")
       return
     }
     if (!formData.paymentMethod) {
@@ -391,7 +449,10 @@ export default function BookPage() {
                     <span className="font-semibold">Package:</span> {selectedPackageInfo.name}
                   </p>
                   <p>
-                    <span className="font-semibold">Price:</span> ₱{selectedPackageInfo.price?.toLocaleString()}
+                    <span className="font-semibold">Price:</span>{" "}
+                    {typeof selectedPackageInfo.price === "number"
+                      ? `₱${selectedPackageInfo.price.toLocaleString()}`
+                      : selectedPackageInfo.price}
                   </p>
                   {selectedPackageInfo.customItems && (
                     <div>
@@ -603,14 +664,31 @@ export default function BookPage() {
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Preferred Package <span className="text-destructive">*</span>
                     </label>
-                    <input
-                      type="text"
+                    <select
+                      aria-label="Preferred Package"
                       name="preferredPackage"
                       value={formData.preferredPackage}
-                      readOnly
-                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none"
-                      placeholder="Please select a package from the Packages page"
-                    />
+                      onChange={(e) => {
+                        handleInputChange(e)
+                        const selected = packages.find((pkg: any) => pkg.name === e.target.value) || null
+                        setSelectedPackageInfo(selected)
+                      }}
+                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
+                    >
+                      <option value="">
+                        {isLoadingPackages ? "Loading packages..." : "Select a package"}
+                      </option>
+                      {packages.map((pkg: any) => (
+                        <option key={pkg._id} value={pkg.name}>
+                          {pkg.name} ({pkg.guests}) - {pkg.price}
+                        </option>
+                      ))}
+                    </select>
+                    {!isLoadingPackages && packages.length === 0 && (
+                      <p className="mt-1 text-xs text-foreground/60">
+                        No packages available yet. Please check again later or contact the administrator.
+                      </p>
+                    )}
                   </div>
 
                   <div>

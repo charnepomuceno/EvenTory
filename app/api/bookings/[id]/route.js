@@ -1,42 +1,56 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import dbConnect from "@/lib/db"
+import { Booking } from "@/lib/models/admin-booking"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+// Keep in sync with serializeBooking in app/api/bookings/route.js
+function serializeBooking(booking) {
+  return {
+    id: booking._id.toString(),
+    user_id: booking.userId?.toString() || null,
+    full_name: booking.customer,
+    email: booking.email,
+    phone: booking.phone,
+    event_type: booking.eventType,
+    number_of_guests: booking.guests,
+    event_date: booking.date,
+    event_location: booking.location,
+    preferred_package: booking.package,
+    special_requests: booking.specialRequests || "",
+    status: booking.status,
+    price: booking.price ?? booking.amount ?? 0,
+    paid: booking.paid ?? 0,
+    created_at: booking.createdAt,
+    updated_at: booking.updatedAt,
+  }
+}
 
 export async function PATCH(request, { params }) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     const { status, price, paid } = body
 
-    if (!status && !price && !paid) {
+    if (!status && price === undefined && paid === undefined) {
       return NextResponse.json({ error: "No fields to update" }, { status: 400 })
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    await dbConnect()
 
-    const updateData = { updated_at: new Date().toISOString() }
-    if (status) updateData.status = status
-    if (price) updateData.price = price
-    if (paid) updateData.paid = paid
-
-    const { data, error } = await supabase
-      .from("bookings")
-      .update(updateData)
-      .eq("id", id)
-      .select()
-
-    if (error) {
-      console.error("Error updating booking:", error)
-      return NextResponse.json({ error: "Failed to update booking" }, { status: 500 })
+    const updateData = {}
+    if (status) {
+      // Map frontend status to stored status (same values currently)
+      updateData.status = status
     }
+    if (price !== undefined) updateData.price = Number(price)
+    if (paid !== undefined) updateData.paid = Number(paid)
 
-    if (!data || data.length === 0) {
+    const booking = await Booking.findByIdAndUpdate(id, updateData, { new: true })
+
+    if (!booking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ booking: data[0] })
+    return NextResponse.json({ booking: serializeBooking(booking) })
   } catch (error) {
     console.error("Booking update error:", error)
     return NextResponse.json({ error: "Failed to update booking" }, { status: 500 })
@@ -45,18 +59,14 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params
+    const { id } = await params
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    await dbConnect()
 
-    const { error } = await supabase
-      .from("bookings")
-      .delete()
-      .eq("id", id)
+    const deleted = await Booking.findByIdAndDelete(id)
 
-    if (error) {
-      console.error("Error deleting booking:", error)
-      return NextResponse.json({ error: "Failed to delete booking" }, { status: 500 })
+    if (!deleted) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 })
     }
 
     return NextResponse.json({ message: "Booking deleted successfully" })

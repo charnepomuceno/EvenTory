@@ -5,7 +5,7 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation"
 
 export default function FeedbackPage() {
   const pathname = usePathname()
@@ -14,6 +14,7 @@ export default function FeedbackPage() {
   const [comments, setComments] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [personalDetails, setPersonalDetails] = useState({
     fullName: "",
@@ -41,8 +42,34 @@ export default function FeedbackPage() {
     }
   }, [])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [recentFeedback, setRecentFeedback] = useState<
+    { _id: string; name: string; rating: number; text: string; date: string; eventType: string }[]
+  >([])
+  const [loadingRecent, setLoadingRecent] = useState(false)
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        setLoadingRecent(true)
+        const res = await fetch("/api/feedback?status=Visible")
+        const json = await res.json()
+        if (!res.ok || !Array.isArray(json)) return
+
+        setRecentFeedback(json.slice(0, 5))
+      } catch (e) {
+        console.error("Failed to load feedback", e)
+      } finally {
+        setLoadingRecent(false)
+      }
+    }
+
+    fetchRecent()
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setError("")
+
     if (rating === 0) {
       setError("Please select a rating")
       return
@@ -51,11 +78,60 @@ export default function FeedbackPage() {
       setError("Please add feedback text")
       return
     }
-    setSubmitted(true)
-    setRating(0)
-    setComments("")
-    setError("")
-    setTimeout(() => setSubmitted(false), 3000)
+
+    try {
+      setIsSubmitting(true)
+
+      const today = new Date()
+      const formattedDate = today.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: personalDetails.fullName || "Anonymous",
+          eventType: "Customer Feedback",
+          date: formattedDate,
+          rating,
+          text: comments.trim(),
+        }),
+      })
+
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json.error || "Failed to submit feedback")
+        setIsSubmitting(false)
+        return
+      }
+
+      // Optimistically add new feedback to recent list
+      setRecentFeedback((prev) => [
+        {
+          _id: json._id || Math.random().toString(),
+          name: json.name,
+          rating: json.rating,
+          text: json.text,
+          date: json.date,
+          eventType: json.eventType,
+        },
+        ...prev,
+      ])
+
+      setSubmitted(true)
+      setRating(0)
+      setComments("")
+      setError("")
+      setIsSubmitting(false)
+      setTimeout(() => setSubmitted(false), 3000)
+    } catch (err) {
+      console.error("Feedback submit error:", err)
+      setError("Failed to submit feedback. Please try again.")
+      setIsSubmitting(false)
+    }
   }
 
   const isActive = (href: string) => pathname === href
@@ -252,9 +328,10 @@ export default function FeedbackPage() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200 cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full px-6 py-3 md:py-4 bg-accent text-primary-foreground rounded-lg font-mochiy text-base md:text-lg hover:bg-accent/90 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Submit Feedback
+                {isSubmitting ? "Submitting..." : "Submit Feedback"}
               </button>
             </form>
           </div>
@@ -268,63 +345,40 @@ export default function FeedbackPage() {
             </div>
 
             <div className="space-y-6 opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
-              {/* sample reviews */}
-              <div className="bg-card rounded-lg p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow border border-border/50">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="text-lg md:text-xl font-mochiy text-primary">Maria Santos</h3>
-                    <div className="flex gap-1 mt-2">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className="text-accent text-lg">
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-accent text-sm md:text-base font-archivo">2 days ago</p>
+              {loadingRecent && (
+                <div className="bg-card rounded-lg p-6 md:p-8 border border-border/50 text-center text-foreground/60 font-archivo">
+                  Loading reviews...
                 </div>
-                <p className="text-foreground/80 text-base font-archivo italic">
-                  Excellent service! The food was delicious and beautifully presented.
-                </p>
-              </div>
+              )}
 
-              <div className="bg-card rounded-lg p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow border border-border/50">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="text-lg md:text-xl font-mochiy text-primary">Juan Dela Cruz</h3>
-                    <div className="flex gap-1 mt-2">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className="text-accent text-lg">
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-accent text-sm md:text-base font-archivo">1 week ago</p>
+              {!loadingRecent && recentFeedback.length === 0 && (
+                <div className="bg-card rounded-lg p-6 md:p-8 border border-border/50 text-center text-foreground/60 font-archivo">
+                  No reviews yet. Be the first to leave feedback!
                 </div>
-                <p className="text-foreground/80 text-base font-archivo italic">
-                  Our wedding was perfect thanks to EvenTory. Highly recommended!
-                </p>
-              </div>
+              )}
 
-              <div className="bg-card rounded-lg p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow border border-border/50">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="text-lg md:text-xl font-mochiy text-primary">Ana Reyes</h3>
-                    <div className="flex gap-1 mt-2">
-                      {[...Array(4)].map((_, i) => (
-                        <span key={i} className="text-accent text-lg">
-                          ★
-                        </span>
-                      ))}
+              {!loadingRecent &&
+                recentFeedback.map((fb) => (
+                  <div
+                    key={fb._id}
+                    className="bg-card rounded-lg p-6 md:p-8 shadow-md hover:shadow-lg transition-shadow border border-border/50"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-lg md:text-xl font-mochiy text-primary">{fb.name}</h3>
+                        <div className="flex gap-1 mt-2">
+                          {[...Array(fb.rating)].map((_, i) => (
+                            <span key={i} className="text-accent text-lg">
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-accent text-sm md:text-base font-archivo">{fb.date}</p>
                     </div>
+                    <p className="text-foreground/80 text-base font-archivo italic">{fb.text}</p>
                   </div>
-                  <p className="text-accent text-sm md:text-base font-archivo">2 weeks ago</p>
-                </div>
-                <p className="text-foreground/80 text-base font-archivo italic">
-                  Great food quality and professional staff. Will definitely book again.
-                </p>
-              </div>
+                ))}
             </div>
           </div>
 

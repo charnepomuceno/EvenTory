@@ -1,10 +1,30 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
-import { dbConnect } from "../../../lib/db.js"
-import User from "../../../lib/models/User.js"
+import dbConnect from "@/lib/db"
+import User from "@/lib/models/User"
+import { Booking } from "@/lib/models/admin-booking"
+import { Payment } from "@/lib/models/admin-payment"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+// Helper to shape booking data for the frontend (profile & admin)
+function serializeBooking(booking) {
+  return {
+    id: booking._id.toString(),
+    user_id: booking.userId?.toString() || null,
+    full_name: booking.customer,
+    email: booking.email,
+    phone: booking.phone,
+    event_type: booking.eventType,
+    number_of_guests: booking.guests,
+    event_date: booking.date,
+    event_location: booking.location,
+    preferred_package: booking.package,
+    special_requests: booking.specialRequests || "",
+    status: booking.status,
+    price: booking.price ?? booking.amount ?? 0,
+    paid: booking.paid ?? 0,
+    created_at: booking.createdAt,
+    updated_at: booking.updatedAt,
+  }
+}
 
 export async function GET(request) {
   try {
@@ -12,25 +32,16 @@ export async function GET(request) {
     const userId = searchParams.get("userId")
     const isAdmin = searchParams.get("isAdmin") === "true"
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    await dbConnect()
 
-    let query = supabase
-      .from("bookings")
-      .select("*")
-      .order("created_at", { ascending: false })
-
+    const query = {}
     if (!isAdmin && userId) {
-      query = query.eq("user_id", userId)
+      query.userId = userId
     }
 
-    const { data, error } = await query
+    const bookings = await Booking.find(query).sort({ createdAt: -1 })
 
-    if (error) {
-      console.error("Error fetching bookings:", error)
-      return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 })
-    }
-
-    return NextResponse.json({ bookings: data || [] })
+    return NextResponse.json({ bookings: bookings.map(serializeBooking) })
   } catch (error) {
     console.error("Bookings fetch error:", error)
     return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 })
@@ -54,54 +65,81 @@ export async function POST(request) {
       price,
     } = body
 
-    if (!userId || !fullName || !email || !phone || !eventType || !numberOfGuests || !eventDate || !eventLocation || !preferredPackage) {
+    if (
+      !userId ||
+      !fullName ||
+      !email ||
+      !phone ||
+      !eventType ||
+      !numberOfGuests ||
+      !eventDate ||
+      !eventLocation ||
+      !preferredPackage
+    ) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    await dbConnect()
+
     // Check if user exists in MongoDB
+    const user = await User.findById(userId)
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found. Please sign up or log in to book an event." },
+        { status: 401 },
+      )
+    }
+
+    const guests = Number.parseInt(numberOfGuests, 10)
+
+    // Safely parse price from either a number or a string like "₱1,000 per head"
+    let numericPrice = 0
+    if (typeof price === "number") {
+      numericPrice = price
+    } else if (typeof price === "string") {
+      const cleaned = price.replace(/[^0-9.]/g, "")
+      numericPrice = cleaned ? Number(cleaned) : 0
+    }
+
+    const bookingData = {
+      userId,
+      customer: fullName,
+      email,
+      phone,
+      eventType,
+      guests,
+      date: eventDate,
+      location: eventLocation,
+      package: preferredPackage,
+      amount: numericPrice,
+      price: numericPrice,
+      paid: 0,
+      status: "pending",
+      specialRequests: specialRequests || "",
+    }
+
+    const booking = await Booking.create(bookingData)
+
+    // Create initial payment record linked to this booking
     try {
-      await dbConnect()
-      const user = await User.findById(userId)
-      if (!user) {
-        return NextResponse.json(
-          { error: "User not found. Please sign up or log in to book an event." },
-          { status: 401 }
-        )
-      }
-    } catch (dbError) {
-      console.error("Database check error:", dbError)
-      return NextResponse.json({ error: "Failed to verify user" }, { status: 500 })
+      await Payment.create({
+        bookingId: booking._id,
+        customer: booking.customer,
+        event: booking.eventType,
+        eventDate: booking.date,
+        totalAmount: booking.price ?? booking.amount ?? 0,
+        paidAmount: 0,
+        balance: booking.price ?? booking.amount ?? 0,
+        status: "Pending",
+        paymentMethod: "-",
+        paymentDate: "-",
+      })
+    } catch (paymentError) {
+      console.error("Failed to create payment record for booking:", paymentError)
+      // Do not fail the booking if payment document fails; admin can repair manually
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    const { data, error } = await supabase
-      .from("bookings")
-      .insert([
-        {
-          user_id: userId,
-          full_name: fullName,
-          email,
-          phone,
-          event_type: eventType,
-          number_of_guests: parseInt(numberOfGuests),
-          event_date: eventDate,
-          event_location: eventLocation,
-          preferred_package: preferredPackage,
-          special_requests: specialRequests || "",
-          status: "pending",
-          price: price || "0",
-          paid: "0",
-        },
-      ])
-      .select()
-
-    if (error) {
-      console.error("Error creating booking:", error)
-      return NextResponse.json({ error: "Failed to create booking" }, { status: 500 })
-    }
-
-    return NextResponse.json({ booking: data[0] }, { status: 201 })
+    return NextResponse.json({ booking: serializeBooking(booking) }, { status: 201 })
   } catch (error) {
     console.error("Booking creation error:", error)
     return NextResponse.json({ error: "Failed to create booking" }, { status: 500 })
