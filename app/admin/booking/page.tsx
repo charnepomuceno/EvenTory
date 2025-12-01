@@ -2,74 +2,90 @@
 
 import { Search, Eye, CheckCircle, XCircle, Users, Calendar, MapPin } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+
+type Booking = {
+  _id: string
+  full_name: string
+  email: string
+  phone: string
+  event_type: string
+  number_of_guests: number
+  event_date: string
+  event_location: string
+  preferred_package: string
+  status: string
+  price: string | number
+  customMenu?: boolean
+}
 
 export default function ManageBookings() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
-  const bookings = [
-    {
-      id: 1,
-      customer: "Maria Santos",
-      email: "maria@example.com",
-      phone: "+63 912 345 6789",
-      eventType: "Wedding",
-      guests: 80,
-      date: "March 15, 2025",
-      location: "Grand Ballroom, Manila Hotel",
-      package: "Wedding Elegance Package",
-      amount: 45000,
-      status: "Pending",
-      customMenu: true,
-    },
-    {
-      id: 2,
-      customer: "Juan Cruz",
-      email: "juan@example.com",
-      phone: "+63 923 456 7890",
-      eventType: "Birthday Party",
-      guests: 40,
-      date: "February 20, 2025",
-      location: "Private Residence, Quezon City",
-      package: "Birthday Celebration Package",
-      amount: 18000,
-      status: "Confirmed",
-      customMenu: false,
-    },
-    {
-      id: 3,
-      customer: "Ana Reyes",
-      email: "ana@example.com",
-      phone: "+63 934 567 8901",
-      eventType: "Corporate Event",
-      guests: 60,
-      date: "December 10, 2024",
-      location: "Conference Hall, BGC",
-      package: "Corporate Event Package",
-      amount: 28000,
-      status: "Completed",
-      customMenu: false,
-    },
-  ]
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch("/api/bookings?isAdmin=true")
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch bookings")
+        }
+        setBookings(data.bookings || [])
+      } catch (err: any) {
+        setError(err.message || "Error fetching bookings")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchBookings()
+  }, [])
 
   const filteredBookings = bookings.filter(
     (booking) =>
-      booking.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      booking.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       booking.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.eventType.toLowerCase().includes(searchQuery.toLowerCase()),
+      booking.event_type.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pending":
+    const statusLower = status?.toLowerCase() || ""
+    switch (statusLower) {
+      case "pending":
         return "bg-blue-100 text-blue-700"
-      case "Confirmed":
+      case "confirmed":
         return "bg-red-100 text-red-700"
-      case "Completed":
+      case "completed":
         return "bg-green-100 text-green-700"
       default:
         return "bg-gray-100 text-gray-700"
     }
+  }
+
+  if (loading) {
+    return (
+      <main className="max-w-7xl mx-auto px-6 py-12 relative z-20">
+        <h1 className="text-4xl font-bold text-red-900 mb-8 font-mochiy">Manage Bookings</h1>
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">Loading bookings...</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="max-w-7xl mx-auto px-6 py-12 relative z-20">
+        <h1 className="text-4xl font-bold text-red-900 mb-8 font-mochiy">Manage Bookings</h1>
+        <div className="text-center py-12">
+          <p className="text-red-500 text-lg">{error}</p>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -114,9 +130,9 @@ export default function ManageBookings() {
           </thead>
           <tbody>
             {filteredBookings.map((booking) => (
-              <tr key={booking.id} className="border-b border-gray-200">
+              <tr key={booking._id} className="border-b border-gray-200">
                 <td className="py-6 px-4">
-                  <p className="font-semibold text-gray-900">{booking.customer}</p>
+                  <p className="font-semibold text-gray-900">{booking.full_name}</p>
                   <p className="text-sm text-gray-500">{booking.email}</p>
                   <p className="text-sm text-gray-500">{booking.phone}</p>
                   {booking.customMenu && (
@@ -126,37 +142,37 @@ export default function ManageBookings() {
                   )}
                 </td>
                 <td className="py-6 px-4">
-                  <p className="font-semibold text-red-900">{booking.eventType}</p>
+                  <p className="font-semibold text-red-900">{booking.event_type}</p>
                   <p className="text-sm text-gray-500 flex items-center gap-2">
                     <Users size={16} className="text-gray-500" />
-                    {booking.guests} guests
+                    {booking.number_of_guests} guests
                   </p>
                 </td>
 
                 <td className="py-6 px-4">
                   <p className="text-sm text-gray-900 flex items-center gap-2">
                     <Calendar size={16} className="text-gray-500" />
-                    {booking.date}
+                    {booking.event_date}
                   </p>
                   <p className="text-sm text-gray-500 flex items-center gap-2">
                     <MapPin size={16} className="text-gray-500" />
-                    {booking.location}
+                    {booking.event_location}
                   </p>
                 </td>
                 <td className="py-6 px-4">
-                  <p className="text-sm text-red-900 font-medium">{booking.package}</p>
+                  <p className="text-sm text-red-900 font-medium">{booking.preferred_package}</p>
                 </td>
                 <td className="py-6 px-4">
-                  <p className="font-bold text-red-900">₱{booking.amount.toLocaleString()}</p>
+                  <p className="font-bold text-red-900">₱{Number(booking.price).toLocaleString()}</p>
                 </td>
                 <td className="py-6 px-4">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(booking.status)}`}>
-                    {booking.status}
+                    {booking.status || "Pending"}
                   </span>
                 </td>
                 <td className="py-6 px-4">
                   <div className="flex items-center gap-3">
-                    {booking.status === "Pending" ? (
+                    {booking.status?.toLowerCase() === "pending" ? (
                       <>
                         <button className="bg-green-500 text-white p-2 rounded-full">
                           <CheckCircle size={18} />

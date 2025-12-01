@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { dbConnect } from "../../../lib/db.js"
+import User from "../../../lib/models/User.js"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -54,6 +56,21 @@ export async function POST(request) {
 
     if (!userId || !fullName || !email || !phone || !eventType || !numberOfGuests || !eventDate || !eventLocation || !preferredPackage) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    // Check if user exists in MongoDB
+    try {
+      await dbConnect()
+      const user = await User.findById(userId)
+      if (!user) {
+        return NextResponse.json(
+          { error: "User not found. Please sign up or log in to book an event." },
+          { status: 401 }
+        )
+      }
+    } catch (dbError) {
+      console.error("Database check error:", dbError)
+      return NextResponse.json({ error: "Failed to verify user" }, { status: 500 })
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
