@@ -245,9 +245,8 @@ function CheckAvailability() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<number | null>(null)
   const [showPopup, setShowPopup] = useState(false)
-  const [popupStatus, setPopupStatus] = useState<"available" | "booked" | "pending" | "past" | null>(null)
+  const [popupStatus, setPopupStatus] = useState<"available" | "booked" | "past" | null>(null)
   const [bookedDateKeys, setBookedDateKeys] = useState<Set<string>>(new Set())
-  const [pendingDateKeys, setPendingDateKeys] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const fetchBookedDates = async () => {
@@ -257,7 +256,6 @@ function CheckAvailability() {
         if (!res.ok) return
 
         const bookedKeys = new Set<string>()
-        const pendingKeys = new Set<string>()
 
         ;(json.bookings || []).forEach((b: any) => {
           // Skip cancelled bookings
@@ -270,15 +268,12 @@ function CheckAvailability() {
           const day = `${d.getDate()}`.padStart(2, "0")
           const key = `${y}-${m}-${day}`
 
-          if (b.status === "pending") {
-            pendingKeys.add(key)
-          } else if (b.status === "confirmed" || b.status === "completed") {
-            bookedKeys.add(key)
-          }
+          // Mark all non-cancelled bookings (pending, confirmed, completed) as booked
+          // since those dates are already taken by users
+          bookedKeys.add(key)
         })
 
         setBookedDateKeys(bookedKeys)
-        setPendingDateKeys(pendingKeys)
       } catch (e) {
         console.error("Failed to load booked dates", e)
       }
@@ -300,7 +295,7 @@ function CheckAvailability() {
     return checkDate <= today
   }
 
-  const getDateStatus = (day: number): "available" | "booked" | "pending" | "past" => {
+  const getDateStatus = (day: number): "available" | "booked" | "past" => {
     if (isDateInPastOrToday(currentDate.getFullYear(), currentDate.getMonth(), day)) {
       return "past" // Past dates are unavailable
     }
@@ -311,7 +306,6 @@ function CheckAvailability() {
     const key = `${y}-${m}-${d}`
 
     if (bookedDateKeys.has(key)) return "booked"
-    if (pendingDateKeys.has(key)) return "pending"
     return "available"
   }
 
@@ -319,7 +313,6 @@ function CheckAvailability() {
     const status = getDateStatus(day)
     if (status === "past") return "bg-gray-100 text-gray-400 cursor-not-allowed"
     if (status === "booked") return "bg-red-100 text-red-700 cursor-not-allowed"
-    if (status === "pending") return "bg-yellow-100 text-yellow-700 cursor-not-allowed"
     return "bg-green-50 text-green-700 hover:bg-green-200 cursor-pointer"
   }
 
@@ -418,10 +411,10 @@ function CheckAvailability() {
               <div className="w-4 h-4 bg-green-100 rounded"></div> Available
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-yellow-100 rounded"></div> Pending
+              <div className="w-4 h-4 bg-red-100 rounded"></div> Booked
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-100 rounded"></div> Booked
+              <div className="w-4 h-4 bg-gray-100 rounded"></div> Past
             </div>
           </div>
 
