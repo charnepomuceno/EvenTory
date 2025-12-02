@@ -139,15 +139,19 @@ export default function PackagesPage() {
       const itemsToPass = selectedMenuItems.length > 0 ? selectedMenuItems : []
       const itemNames = itemsToPass.map((id) => menuItems.find((m) => m.id === id)?.name).filter(Boolean)
 
-      sessionStorage.setItem(
-        "selectedPackage",
-        JSON.stringify({
-          name: selectedPackage.name,
-          price: customPrice || selectedPackage.minPrice,
-          customItems: itemNames.length > 0 ? itemNames : selectedPackage.inclusions,
-          isCustomized: selectedMenuItems.length > 0,
-        }),
-      )
+      // Store the full package data for the booking page
+      const packageData = {
+        name: selectedPackage.name,
+        price: customPrice || selectedPackage.minPrice,
+        priceRange: selectedPackage.priceRange,
+        customItems: itemNames.length > 0 ? itemNames : selectedPackage.inclusions,
+        isCustomized: selectedMenuItems.length > 0,
+        guestRange: selectedPackage.guestRange,
+      }
+
+      sessionStorage.setItem("selectedPackage", JSON.stringify(packageData))
+      setShowDetailsModal(false)
+      setShowCustomizeModal(false)
       router.push("/book")
     }
   }
@@ -341,10 +345,22 @@ export default function PackagesPage() {
                     Customize Package
                   </button>
                   <button
-                    onClick={() => handleBookNow(pkg)}
+                    onClick={() => {
+                      // Store package and redirect directly to booking page
+                      sessionStorage.setItem(
+                        "selectedPackage",
+                        JSON.stringify({
+                          name: pkg.name,
+                          price: pkg.priceRange,
+                          customItems: pkg.inclusions,
+                          isCustomized: false,
+                        }),
+                      )
+                      router.push("/book")
+                    }}
                     className="flex-1 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:text-primary transition-colors cursor-pointer"
                   >
-                    View Package
+                    Book Now
                   </button>
                 </div>
               </div>

@@ -292,6 +292,7 @@ function CheckAvailability() {
     today.setHours(0, 0, 0, 0)
     const checkDate = new Date(year, month, day)
     checkDate.setHours(0, 0, 0, 0)
+    // Return true if the date is today or in the past (including today)
     return checkDate <= today
   }
 

@@ -63,6 +63,7 @@ export async function POST(request) {
       preferredPackage,
       specialRequests,
       price,
+      paymentMethod,
     } = body
 
     if (
@@ -122,6 +123,12 @@ export async function POST(request) {
 
     // Create initial payment record linked to this booking
     try {
+      // Validate payment method - must be one of the enum values
+      const validPaymentMethods = ["credit-card", "debit-card", "bank-transfer", "gcash"]
+      const selectedPaymentMethod = paymentMethod && validPaymentMethods.includes(paymentMethod) 
+        ? paymentMethod 
+        : "gcash" // Default to gcash if not provided or invalid
+
       await Payment.create({
         bookingId: booking._id,
         customer: booking.customer,
@@ -131,8 +138,7 @@ export async function POST(request) {
         paidAmount: 0,
         balance: booking.price ?? booking.amount ?? 0,
         status: "Pending",
-        paymentMethod: "-",
-        paymentDate: "-",
+        paymentMethod: selectedPaymentMethod,
       })
     } catch (paymentError) {
       console.error("Failed to create payment record for booking:", paymentError)

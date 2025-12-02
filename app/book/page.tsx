@@ -59,13 +59,17 @@ export default function BookPage() {
     const packageData = sessionStorage.getItem("selectedPackage")
     let initialSelectedPackage: any = null
     if (packageData) {
-      const parsed = JSON.parse(packageData)
-      initialSelectedPackage = parsed
-      setSelectedPackageInfo(parsed)
-      setFormData((prev) => ({
-        ...prev,
-        preferredPackage: parsed.name,
-      }))
+      try {
+        const parsed = JSON.parse(packageData)
+        initialSelectedPackage = parsed
+        // Set the preferred package name immediately
+        setFormData((prev) => ({
+          ...prev,
+          preferredPackage: parsed.name,
+        }))
+      } catch (e) {
+        console.error("Error parsing selected package:", e)
+      }
     }
 
     const fetchPackages = async () => {
@@ -79,17 +83,54 @@ export default function BookPage() {
           setPackages(activePackages)
 
           // Sync selected package info with admin-defined packages when possible
-          if (initialSelectedPackage && !selectedPackageInfo) {
+          if (initialSelectedPackage) {
             const matched = activePackages.find((pkg: any) => pkg.name === initialSelectedPackage.name)
             if (matched) {
-              setSelectedPackageInfo(matched)
+              // Use the matched package from API, but preserve custom price if customized
+              setSelectedPackageInfo({
+                ...matched,
+                price: initialSelectedPackage.isCustomized ? initialSelectedPackage.price : matched.price,
+                customItems: initialSelectedPackage.customItems || matched.inclusions,
+              })
+              // Ensure the formData matches the found package name
+              setFormData((prev) => ({
+                ...prev,
+                preferredPackage: matched.name,
+              }))
+            } else {
+              // If no match found, clear the selection so user can choose
+              setSelectedPackageInfo(null)
+              setFormData((prev) => ({
+                ...prev,
+                preferredPackage: "",
+              }))
+              // Clear sessionStorage if package doesn't exist
+              sessionStorage.removeItem("selectedPackage")
             }
           }
         } else {
           console.error("Failed to load packages:", data.error)
+          // If API fails, clear the selection
+          if (initialSelectedPackage) {
+            setSelectedPackageInfo(initialSelectedPackage)
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              preferredPackage: "",
+            }))
+          }
         }
       } catch (err) {
         console.error("Error loading packages:", err)
+        // If error, clear the selection
+        if (initialSelectedPackage) {
+          setSelectedPackageInfo(initialSelectedPackage)
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            preferredPackage: "",
+          }))
+        }
       } finally {
         setIsLoadingPackages(false)
       }
@@ -124,7 +165,7 @@ export default function BookPage() {
     fetchBookedDates()
 
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [selectedPackageInfo])
+  }, []) // Only run once on mount
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -285,6 +326,7 @@ export default function BookPage() {
           preferredPackage: formData.preferredPackage,
           specialRequests: formData.specialRequests,
           price: selectedPackageInfo?.price?.toString() || "0",
+          paymentMethod: formData.paymentMethod || "gcash",
         }),
       })
 
@@ -660,33 +702,59 @@ export default function BookPage() {
                     />
                   </div>
 
-                  <div>
+                  <div className="relative z-10">
                     <label className="block text-foreground font-archivo text-sm mb-2">
                       Preferred Package <span className="text-destructive">*</span>
                     </label>
-                    <select
-                      aria-label="Preferred Package"
-                      name="preferredPackage"
-                      value={formData.preferredPackage}
-                      onChange={(e) => {
-                        handleInputChange(e)
-                        const selected = packages.find((pkg: any) => pkg.name === e.target.value) || null
-                        setSelectedPackageInfo(selected)
-                      }}
-                      className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
-                    >
-                      <option value="">
-                        {isLoadingPackages ? "Loading packages..." : "Select a package"}
-                      </option>
-                      {packages.map((pkg: any) => (
-                        <option key={pkg._id} value={pkg.name}>
-                          {pkg.name} ({pkg.guests}) - {pkg.price}
+                    <div className="relative">
+                      <select
+                        aria-label="Preferred Package"
+                        name="preferredPackage"
+                        value={formData.preferredPackage || ""}
+                        onChange={(e) => {
+                          const newValue = e.target.value
+                          handleInputChange(e)
+                          const selected = packages.find((pkg: any) => pkg.name === newValue) || null
+                          setSelectedPackageInfo(selected)
+                          // Clear selected package info if user selects empty option
+                          if (!newValue) {
+                            setSelectedPackageInfo(null)
+                            // Clear sessionStorage when user manually changes selection
+                            sessionStorage.removeItem("selectedPackage")
+                          } else if (selected) {
+                            // Update sessionStorage with new selection
+                            sessionStorage.setItem(
+                              "selectedPackage",
+                              JSON.stringify({
+                                name: selected.name,
+                                price: selected.price,
+                                customItems: selected.inclusions || [],
+                                isCustomized: false,
+                              }),
+                            )
+                          }
+                        }}
+                        disabled={isLoadingPackages || packages.length === 0}
+                        className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="">
+                          {isLoadingPackages ? "Loading packages..." : packages.length === 0 ? "No packages available" : "Select a package"}
                         </option>
-                      ))}
-                    </select>
+                        {packages.map((pkg: any) => (
+                          <option key={pkg._id} value={pkg.name}>
+                            {pkg.name} ({pkg.guests}) - {pkg.price}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     {!isLoadingPackages && packages.length === 0 && (
                       <p className="mt-1 text-xs text-foreground/60">
                         No packages available yet. Please check again later or contact the administrator.
+                      </p>
+                    )}
+                    {formData.preferredPackage && packages.length > 0 && (
+                      <p className="mt-1 text-xs text-foreground/60">
+                        You can change the package selection above if needed.
                       </p>
                     )}
                   </div>
