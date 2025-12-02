@@ -242,25 +242,76 @@ function FeaturedPackages() {
 }
 
 function CheckAvailability() {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9)) // October 2025
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<number | null>(null)
   const [showPopup, setShowPopup] = useState(false)
   const [popupStatus, setPopupStatus] = useState<"available" | "booked" | "pending" | null>(null)
+  const [bookedDateKeys, setBookedDateKeys] = useState<Set<string>>(new Set())
+  const [pendingDateKeys, setPendingDateKeys] = useState<Set<string>>(new Set())
 
-  const dateStatuses = {
-    available: [1, 3, 4, 5, 6, 8, 9, 11, 12, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 27, 28, 29, 31],
-    booked: [2, 7, 10, 21, 22],
-    pending: [13, 30],
-  }
+  useEffect(() => {
+    const fetchBookedDates = async () => {
+      try {
+        const res = await fetch("/api/bookings")
+        const json = await res.json()
+        if (!res.ok) return
+
+        const bookedKeys = new Set<string>()
+        const pendingKeys = new Set<string>()
+
+        ;(json.bookings || []).forEach((b: any) => {
+          // Skip cancelled bookings
+          if (b.status === "cancelled") return
+          if (!b.event_date) return
+          const d = new Date(b.event_date)
+          if (isNaN(d.getTime())) return
+          const y = d.getFullYear()
+          const m = `${d.getMonth() + 1}`.padStart(2, "0")
+          const day = `${d.getDate()}`.padStart(2, "0")
+          const key = `${y}-${m}-${day}`
+
+          if (b.status === "pending") {
+            pendingKeys.add(key)
+          } else if (b.status === "confirmed" || b.status === "completed") {
+            bookedKeys.add(key)
+          }
+        })
+
+        setBookedDateKeys(bookedKeys)
+        setPendingDateKeys(pendingKeys)
+      } catch (e) {
+        console.error("Failed to load booked dates", e)
+      }
+    }
+
+    fetchBookedDates()
+  }, [])
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
   const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => null)
 
+  const isDateInPastOrToday = (year: number, month: number, day: number): boolean => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const checkDate = new Date(year, month, day)
+    checkDate.setHours(0, 0, 0, 0)
+    return checkDate <= today
+  }
+
   const getDateStatus = (day: number): "available" | "booked" | "pending" => {
-    if (dateStatuses.booked.includes(day)) return "booked"
-    if (dateStatuses.pending.includes(day)) return "pending"
+    if (isDateInPastOrToday(currentDate.getFullYear(), currentDate.getMonth(), day)) {
+      return "booked" // Treat past dates as unavailable
+    }
+
+    const y = currentDate.getFullYear()
+    const m = `${currentDate.getMonth() + 1}`.padStart(2, "0")
+    const d = `${day}`.padStart(2, "0")
+    const key = `${y}-${m}-${d}`
+
+    if (bookedDateKeys.has(key)) return "booked"
+    if (pendingDateKeys.has(key)) return "pending"
     return "available"
   }
 
