@@ -245,7 +245,7 @@ function CheckAvailability() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<number | null>(null)
   const [showPopup, setShowPopup] = useState(false)
-  const [popupStatus, setPopupStatus] = useState<"available" | "booked" | "pending" | null>(null)
+  const [popupStatus, setPopupStatus] = useState<"available" | "booked" | "pending" | "past" | null>(null)
   const [bookedDateKeys, setBookedDateKeys] = useState<Set<string>>(new Set())
   const [pendingDateKeys, setPendingDateKeys] = useState<Set<string>>(new Set())
 
@@ -300,9 +300,9 @@ function CheckAvailability() {
     return checkDate <= today
   }
 
-  const getDateStatus = (day: number): "available" | "booked" | "pending" => {
+  const getDateStatus = (day: number): "available" | "booked" | "pending" | "past" => {
     if (isDateInPastOrToday(currentDate.getFullYear(), currentDate.getMonth(), day)) {
-      return "booked" // Treat past dates as unavailable
+      return "past" // Past dates are unavailable
     }
 
     const y = currentDate.getFullYear()
@@ -317,6 +317,7 @@ function CheckAvailability() {
 
   const getDateColor = (day: number) => {
     const status = getDateStatus(day)
+    if (status === "past") return "bg-gray-100 text-gray-400 cursor-not-allowed"
     if (status === "booked") return "bg-red-100 text-red-700 cursor-not-allowed"
     if (status === "pending") return "bg-yellow-100 text-yellow-700 cursor-not-allowed"
     return "bg-green-50 text-green-700 hover:bg-green-200 cursor-pointer"
