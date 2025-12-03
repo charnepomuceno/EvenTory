@@ -145,7 +145,6 @@ export default function PaymentManagement() {
               <h1 className="text-4xl font-bold text-red-900 mb-2 font-mochiy">Payment Management</h1>
               <p className="text-gray-600">Track and manage all customer payments</p>
             </div>
-            <Image src="/images/eventory.png" alt="EvenTory" width={120} height={40} className="hidden md:block" />
           </div>
 
           {/* Search Bar */}

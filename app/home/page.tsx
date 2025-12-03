@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { CalendarDays, Users, ChefHat, CheckCircle } from "lucide-react"
 
 function Header() {
@@ -666,6 +667,29 @@ function Footer() {
 }
 
 export default function Home() {
+  const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+    const user = typeof window !== "undefined" ? localStorage.getItem("current_user") : null
+
+    if (!token || !user) {
+      router.replace("/login")
+      return
+    }
+
+    setAuthChecked(true)
+  }, [router])
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-foreground/60">Checking authentication...</p>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <Header />

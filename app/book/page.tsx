@@ -11,6 +11,7 @@ import { Calendar } from "lucide-react"
 export default function BookPage() {
   const pathname = usePathname()
   const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
@@ -38,6 +39,18 @@ export default function BookPage() {
     specialRequests: "",
     paymentMethod: "",
   })
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+    const user = typeof window !== "undefined" ? localStorage.getItem("current_user") : null
+
+    if (!token || !user) {
+      router.replace("/login")
+      return
+    }
+
+    setAuthChecked(true)
+  }, [router])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -372,6 +385,14 @@ export default function BookPage() {
   }, [showSuccessPopup, router])
 
   const isActive = (href: string) => pathname === href
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-foreground/60">Checking authentication...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-background">
