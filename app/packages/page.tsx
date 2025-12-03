@@ -345,22 +345,10 @@ export default function PackagesPage() {
                     Customize Package
                   </button>
                   <button
-                    onClick={() => {
-                      // Store package and redirect directly to booking page
-                      sessionStorage.setItem(
-                        "selectedPackage",
-                        JSON.stringify({
-                          name: pkg.name,
-                          price: pkg.priceRange,
-                          customItems: pkg.inclusions,
-                          isCustomized: false,
-                        }),
-                      )
-                      router.push("/book")
-                    }}
+                    onClick={() => handleBookNow(pkg)}
                     className="flex-1 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:text-primary transition-colors cursor-pointer"
                   >
-                    Book Now
+                    View Package
                   </button>
                 </div>
               </div>
@@ -480,10 +468,25 @@ export default function PackagesPage() {
                   Close
                 </button>
                 <button
-                  onClick={handleConfirmPackage}
+                  onClick={() => {
+                    // Store package and redirect directly to booking page
+                    if (selectedPackage) {
+                      sessionStorage.setItem(
+                        "selectedPackage",
+                        JSON.stringify({
+                          name: selectedPackage.name,
+                          price: selectedPackage.priceRange,
+                          customItems: selectedPackage.inclusions,
+                          isCustomized: false,
+                        }),
+                      )
+                      setShowDetailsModal(false)
+                      router.push("/book")
+                    }
+                  }}
                   className="flex-1 px-4 py-3 bg-accent text-primary-foreground rounded-lg font-mochiy hover:bg-accent/90 transition-colors cursor-pointer"
                 >
-                  Confirm Package
+                  Book Now
                 </button>
               </div>
             </div>
@@ -670,22 +673,22 @@ export default function PackagesPage() {
                   <h4 className="font-mochiy text-base mb-3 text-primary-foreground">Quick Links</h4>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                      <Link href="/menu" className="hover:text-primary-foreground/70 transition">
                         Menu
                       </Link>
                     </li>
                     <li>
-                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                      <Link href="/packages" className="hover:text-primary-foreground/70 transition">
                         Packages
                       </Link>
                     </li>
                     <li>
-                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                      <Link href="/book" className="hover:text-primary-foreground/70 transition">
                         Book Now
                       </Link>
                     </li>
                     <li>
-                      <Link href="/login" className="hover:text-primary-foreground/70 transition">
+                      <Link href="/feedback" className="hover:text-primary-foreground/70 transition">
                         Feedback
                       </Link>
                     </li>
