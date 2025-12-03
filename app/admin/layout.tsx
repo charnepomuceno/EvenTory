@@ -2,6 +2,7 @@ import React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Calendar, LogOut, Star, TrendingUp, Package as PackageIcon, Utensils } from "lucide-react"
+import AdminGuard from "./AdminGuard"
 
 export const metadata = {
   title: "Admin - EvenTory",
@@ -63,7 +64,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }}
         />
 
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10">
+          <AdminGuard>{children}</AdminGuard>
+        </div>
       </main>
     </div>
   )

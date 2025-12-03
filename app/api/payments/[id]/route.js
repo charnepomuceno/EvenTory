@@ -1,4 +1,5 @@
 import { Payment } from "@/lib/models/admin-payment.js"
+import { Booking } from "@/lib/models/admin-booking"
 import dbConnect from "@/lib/db"
 import { NextResponse } from "next/server"
 
@@ -24,6 +25,27 @@ export async function PUT(request, { params }) {
     const payment = await Payment.findByIdAndUpdate(id, body, { new: true })
 
     if (!payment) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+    try {
+      if (payment.bookingId) {
+        const { totalAmount, paidAmount } = payment
+        const updateBooking = {}
+        if (typeof totalAmount === "number") {
+          updateBooking.price = totalAmount
+          updateBooking.amount = totalAmount
+        }
+        if (typeof paidAmount === "number") {
+          updateBooking.paid = paidAmount
+        }
+
+        if (Object.keys(updateBooking).length > 0) {
+          await Booking.findByIdAndUpdate(payment.bookingId, { $set: updateBooking })
+        }
+      }
+    } catch (syncError) {
+      console.error("Failed to sync booking with payment update:", syncError)
+    }
+
     return NextResponse.json(payment)
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

@@ -107,7 +107,6 @@ export default function FeedbackPage() {
           <h1 className="text-4xl font-bold text-red-900 mb-2 font-mochiy">Feedback Management</h1>
           <p className="text-gray-600">Review and moderate customer feedback</p>
         </div>
-        <Image src="/images/eventory.png" alt="EvenTory" width={120} height={40} className="hidden md:block" />
       </div>
 
       {/* Stats Cards */}

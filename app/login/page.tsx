@@ -62,18 +62,14 @@ export default function LoginPage() {
 
       const data = await response.json()
 
-      if (Boolean(data.user.isAdmin)) {
-        router.push("/admin")
-      } else {
-        router.push("/home")
-      }
-      
       if (!response.ok) {
         setErrors({ credential: data.error })
         setLoading(false)
         return
       }
 
+      // Simple client-side auth marker; in a real app this would be a JWT
+      localStorage.setItem("authToken", String(data.user.id || ""))
       setLoading(false)
       localStorage.setItem(
         "current_user",
@@ -85,6 +81,12 @@ export default function LoginPage() {
           isAdmin: Boolean(data.user.isAdmin),
         }),
       )
+
+      if (Boolean(data.user.isAdmin)) {
+        router.push("/admin")
+      } else {
+        router.push("/home")
+      }
     } catch (error) {
       setErrors({ credential: "Login failed" })
       setLoading(false)

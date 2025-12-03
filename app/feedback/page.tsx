@@ -5,10 +5,11 @@ import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 export default function FeedbackPage() {
   const pathname = usePathname()
+  const router = useRouter()
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [comments, setComments] = useState("")
@@ -21,6 +22,18 @@ export default function FeedbackPage() {
     phone: "",
     email: "",
   })
+  const [authChecked, setAuthChecked] = useState(false)
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+    const user = typeof window !== "undefined" ? localStorage.getItem("current_user") : null
+
+    if (!token || !user) {
+      router.replace("/login")
+      return
+    }
+    setAuthChecked(true)
+  }, [router])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +44,8 @@ export default function FeedbackPage() {
   }, [])
 
   useEffect(() => {
+    if (!authChecked) return
+
     const storedUser = localStorage.getItem("current_user")
     if (storedUser) {
       const userData = JSON.parse(storedUser)
@@ -40,7 +55,7 @@ export default function FeedbackPage() {
         email: userData.email || "",
       })
     }
-  }, [])
+  }, [authChecked])
 
   const [recentFeedback, setRecentFeedback] = useState<
     { _id: string; name: string; rating: number; text: string; date: string; eventType: string }[]
@@ -48,6 +63,8 @@ export default function FeedbackPage() {
   const [loadingRecent, setLoadingRecent] = useState(false)
 
   useEffect(() => {
+    if (!authChecked) return
+
     const fetchRecent = async () => {
       try {
         setLoadingRecent(true)
@@ -64,7 +81,7 @@ export default function FeedbackPage() {
     }
 
     fetchRecent()
-  }, [])
+  }, [authChecked])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -135,6 +152,14 @@ export default function FeedbackPage() {
   }
 
   const isActive = (href: string) => pathname === href
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-foreground/60">Checking authentication...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-background">

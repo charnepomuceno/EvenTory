@@ -74,6 +74,7 @@ const apiMenuItemToUI = (it: any): MenuItem => ({
 export default function PackagesPage() {
   const pathname = usePathname()
   const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
@@ -85,6 +86,18 @@ export default function PackagesPage() {
   const [packagesData, setPackagesData] = useState<Package[]>([])
   const [loadingPackages, setLoadingPackages] = useState(false)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+    const user = typeof window !== "undefined" ? localStorage.getItem("current_user") : null
+
+    if (!token || !user) {
+      router.replace("/login")
+      return
+    }
+
+    setAuthChecked(true)
+  }, [router])
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -191,6 +204,14 @@ export default function PackagesPage() {
       newExpanded.add(category)
     }
     setExpandedCategories(newExpanded)
+  }
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-foreground/60">Checking authentication...</p>
+      </main>
+    )
   }
 
   return (

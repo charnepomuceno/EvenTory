@@ -15,7 +15,14 @@ export async function GET(request) {
     if (customer) query.customer = { $regex: customer, $options: "i" }
 
     const payments = await Payment.find(query).populate("bookingId").sort({ createdAt: -1 })
-    return NextResponse.json(payments)
+
+    const visiblePayments = payments.filter((payment) => {
+      const bookingStatus = payment.bookingId?.status
+      if (!bookingStatus) return true
+      return bookingStatus === "confirmed" || bookingStatus === "completed"
+    })
+
+    return NextResponse.json(visiblePayments)
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import { Booking } from "@/lib/models/admin-booking"
+import { Payment } from "@/lib/models/admin-payment"
 
 // Keep in sync with serializeBooking in app/api/bookings/route.js
 function serializeBooking(booking) {
@@ -48,6 +49,39 @@ export async function PATCH(request, { params }) {
 
     if (!booking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 })
+    }
+
+    // When a booking gets confirmed ensure payment record exists/synced
+    if (status === "confirmed" && booking) {
+      try {
+        const total = booking.price ?? booking.amount ?? 0
+        const paid = booking.paid ?? 0
+        const balance = Math.max(total - paid, 0)
+
+        const existingPayment = await Payment.findOne({ bookingId: booking._id })
+
+        const paymentPayload = {
+          bookingId: booking._id,
+          customer: booking.customer,
+          event: booking.eventType,
+          eventDate: booking.date,
+          totalAmount: total,
+          paidAmount: paid,
+          balance,
+          status: paid >= total && total > 0 ? "Fully Paid" : paid > 0 ? "Partially Paid" : "Pending",
+          paymentMethod: existingPayment?.paymentMethod || "gcash",
+        }
+
+        if (existingPayment) {
+          await Payment.findByIdAndUpdate(existingPayment._id, {
+            $set: paymentPayload,
+          })
+        } else {
+          await Payment.create(paymentPayload)
+        }
+      } catch (paymentError) {
+        console.error("Failed to sync payment for confirmed booking:", paymentError)
+      }
     }
 
     return NextResponse.json({ booking: serializeBooking(booking) })

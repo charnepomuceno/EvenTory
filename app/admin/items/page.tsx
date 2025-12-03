@@ -180,7 +180,10 @@ export default function ManageMenuItems() {
                        placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
         </div>
-        <button onClick={() => setShowAdd(true)} className="bg-blue-200/80 hover:bg-blue-300 text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2">
+        <button
+          onClick={() => setShowAdd(true)}
+          className="bg-[#669BBC] hover:bg-[#5a87a8] text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2"
+        >
           + Add New Item
         </button>
       </div>

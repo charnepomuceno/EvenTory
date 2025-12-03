@@ -30,6 +30,15 @@ export async function POST(request) {
       return NextResponse.json({ error: "Incorrect password" }, { status: 401 })
     }
 
+    const adminEmails = ["rabad@gbox.adnu.edu.ph", "charnepomuceno@gbox.adnu.edu.ph"]
+    const isAdmin = adminEmails.includes((user.email || "").toLowerCase()) || Boolean(user.isAdmin)
+
+    // Ensure DB flag is set for known admin accounts
+    if (isAdmin && !user.isAdmin) {
+      user.isAdmin = true
+      await user.save()
+    }
+
     return NextResponse.json({
       user: {
         id: user._id,
@@ -37,7 +46,7 @@ export async function POST(request) {
         phoneNumber: user.phoneNumber,
         email: user.email,
         registrationType: user.registrationType,
-        isAdmin: Boolean(user.isAdmin),
+        isAdmin,
       },
     })
   } catch (error) {

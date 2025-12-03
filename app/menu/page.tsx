@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { ArrowUp } from "lucide-react"
 
 interface MenuItem {
@@ -167,14 +167,30 @@ function MenuItem({ item }: { item: MenuItem }) {
 }
 
 export default function MenuPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("main-dishes")
   const [isScrolled, setIsScrolled] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
   const [menuItems, setMenuItems] = useState<Record<string, MenuItem[]>>(emptyMenuData)
   const [loadingItems, setLoadingItems] = useState(false)
 
   useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+    const user = typeof window !== "undefined" ? localStorage.getItem("current_user") : null
+
+    if (!token || !user) {
+      router.replace("/login")
+      return
+    }
+
+    setAuthChecked(true)
+  }, [router])
+
+  useEffect(() => {
+    if (!authChecked) return
+
     const fetchItems = async () => {
       setLoadingItems(true)
       try {
@@ -224,7 +240,7 @@ export default function MenuPage() {
     }
 
     fetchItems()
-  }, [])
+  }, [authChecked])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -252,6 +268,14 @@ export default function MenuPage() {
     { id: "beverages", label: "Beverages" },
     { id: "appetizers", label: "Appetizers" },
   ]
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-foreground/60">Checking authentication...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-background">

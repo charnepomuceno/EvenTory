@@ -232,7 +232,6 @@ export default function ManageBookings() {
           <h1 className="text-4xl font-bold text-red-900 mb-2 font-mochiy">Manage Bookings</h1>
           <p className="text-gray-600">Review and manage all catering bookings</p>
         </div>
-        <Image src="/images/eventory.png" alt="EvenTory" width={120} height={40} className="hidden md:block" />
       </div>
 
       {/* Search Bar */}
@@ -317,14 +316,14 @@ export default function ManageBookings() {
                       {booking.status === "Pending" ? (
                         <>
                           <button
-                            className="bg-green-500 text-white p-2 rounded-full disabled:opacity-50"
+                            className="bg-[#95BC66] hover:bg-[#7da655] text-white p-2 rounded-full disabled:opacity-50"
                             disabled={actionLoadingId === booking.id}
                             onClick={() => handleApprove(booking)}
                           >
                             <CheckCircle size={18} />
                           </button>
                           <button
-                            className="bg-red-600 text-white p-2 rounded-full disabled:opacity-50"
+                            className="bg-[#C1121F] hover:bg-[#9d0e18] text-white p-2 rounded-full disabled:opacity-50"
                             disabled={actionLoadingId === booking.id}
                             onClick={() => handleDecline(booking)}
                           >
@@ -423,21 +422,21 @@ export default function ManageBookings() {
                 <button
                   onClick={handlePendingFromDetails}
                   disabled={detailsActionLoading === "pending"}
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 text-sm font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-[#669BBC] hover:bg-[#5409a0] text-white disabled:opacity-50 text-sm font-medium cursor-pointer"
                 >
                   {detailsActionLoading === "pending" ? "Updating..." : "Mark as Pending"}
                 </button>
                 <button
                   onClick={handleCompleteFromDetails}
                   disabled={detailsActionLoading === "complete"}
-                  className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-[#95BC66] hover:bg-[#7da655] text-white disabled:opacity-50 text-sm font-medium cursor-pointer"
                 >
                   {detailsActionLoading === "complete" ? "Completing..." : "Mark as Completed"}
                 </button>
                 <button
                   onClick={handleDeleteFromDetails}
                   disabled={detailsActionLoading === "delete"}
-                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 text-sm font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-[#C1121F] hover:bg-[#9d0e18] text-white disabled:opacity-50 text-sm font-medium cursor-pointer"
                 >
                   {detailsActionLoading === "delete" ? "Deleting..." : "Delete Booking"}
                 </button>

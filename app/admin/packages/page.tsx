@@ -250,7 +250,7 @@ export default function PackagesPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="bg-blue-200/80 hover:bg-blue-300 text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2"
+          className="bg-[#669BBC] hover:bg-[#5a87a8] text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2"
         >
           + Create New Package
         </button>

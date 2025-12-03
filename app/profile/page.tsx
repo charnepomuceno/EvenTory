@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
   const [bookings, setBookings] = useState<any[]>([])
   const [loadingBookings, setLoadingBookings] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
 
   const [profileData, setProfileData] = useState({
     fullName: "",
@@ -48,6 +49,20 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
+    const user = typeof window !== "undefined" ? localStorage.getItem("current_user") : null
+
+    if (!token || !user) {
+      router.replace("/login")
+      return
+    }
+
+    setAuthChecked(true)
+  }, [router])
+
+  useEffect(() => {
+    if (!authChecked) return
+
     const storedUser = localStorage.getItem("current_user")
     if (storedUser) {
       const userData = JSON.parse(storedUser)
@@ -75,7 +90,7 @@ export default function ProfilePage() {
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [authChecked])
 
   const handleEditProfile = () => {
     setEditFormData(profileData)
@@ -173,6 +188,14 @@ export default function ProfilePage() {
     if (status === "confirmed") return "✓ Confirmed"
     if (status === "cancelled") return "✗ Cancelled"
     return "✓ Completed"
+  }
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-foreground/60">Checking authentication...</p>
+      </main>
+    )
   }
 
   return (
