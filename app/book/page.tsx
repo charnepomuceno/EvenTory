@@ -26,6 +26,8 @@ export default function BookPage() {
   const [packages, setPackages] = useState<any[]>([])
   const [isLoadingPackages, setIsLoadingPackages] = useState(false)
 
+  const [totalPrice, setTotalPrice] = useState<number | null>(null)
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -38,6 +40,48 @@ export default function BookPage() {
     specialRequests: "",
     paymentMethod: "",
   })
+
+  const extractNumericPrice = (priceStr: string | number): number => {
+    if (typeof priceStr === "number") {
+      return priceStr
+    }
+    if (typeof priceStr === "string") {
+      const cleaned = priceStr.replace(/[^0-9.]/g, "")
+      return cleaned ? Number(cleaned) : 0
+    }
+    return 0
+  }
+
+  const calculateTotalPrice = (pkg: any, guests: string): number | null => {
+    if (!pkg || !guests) return null
+
+    const guestCount = Number.parseInt(guests, 10)
+    if (isNaN(guestCount) || guestCount < 30) return null
+
+    // Extract numeric price from package price
+    const pricePerGuest = extractNumericPrice(pkg.price)
+    if (pricePerGuest === 0) return null
+
+    // Calculate base price (price per guest × number of guests)
+    const total = pricePerGuest * guestCount
+
+    // Add custom items if they exist
+    if (pkg.customItems && Array.isArray(pkg.customItems)) {
+      // For now, custom items are shown but not priced separately in the calculation
+      // This can be extended if custom items have individual prices
+    }
+
+    return total
+  }
+
+  useEffect(() => {
+    if (selectedPackageInfo && formData.numberOfGuests) {
+      const calculated = calculateTotalPrice(selectedPackageInfo, formData.numberOfGuests)
+      setTotalPrice(calculated)
+    } else {
+      setTotalPrice(null)
+    }
+  }, [selectedPackageInfo, formData.numberOfGuests])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -294,6 +338,10 @@ export default function BookPage() {
       setError("Preferred Package is required. Please select a package.")
       return
     }
+    if (totalPrice === null || totalPrice === 0) {
+      setError("Price calculation failed. Please ensure you have selected a valid package and guest count.")
+      return
+    }
     if (!formData.paymentMethod) {
       setError("Payment Method is required")
       return
@@ -325,7 +373,7 @@ export default function BookPage() {
           eventLocation: formData.eventLocation,
           preferredPackage: formData.preferredPackage,
           specialRequests: formData.specialRequests,
-          price: selectedPackageInfo?.price?.toString() || "0",
+          price: totalPrice,
           paymentMethod: formData.paymentMethod || "gcash",
         }),
       })
@@ -354,6 +402,7 @@ export default function BookPage() {
       })
       sessionStorage.removeItem("selectedPackage")
       setSelectedPackageInfo(null)
+      setTotalPrice(null)
     } catch (error) {
       console.error("Booking submission error:", error)
       setError("Failed to submit booking. Please try again.")
@@ -484,27 +533,52 @@ export default function BookPage() {
             </div>
 
             {selectedPackageInfo && (
-              <div className="mb-8 p-4 bg-secondary/50 rounded-lg border border-border">
-                <h3 className="font-mochiy text-primary text-lg mb-3">Selected Package</h3>
-                <div className="space-y-3 text-sm font-archivo">
-                  <p>
-                    <span className="font-semibold">Package:</span> {selectedPackageInfo.name}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Price:</span>{" "}
-                    {typeof selectedPackageInfo.price === "number"
-                      ? `₱${selectedPackageInfo.price.toLocaleString()}`
-                      : selectedPackageInfo.price}
-                  </p>
-                  {selectedPackageInfo.customItems && (
-                    <div>
-                      <p className="font-semibold mb-2">Additional Items:</p>
+              <div className="mb-8 p-6 bg-accent/5 rounded-lg border-2 border-accent/30 space-y-4">
+                <h3 className="font-mochiy text-primary text-lg">Selected Package</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3 text-sm font-archivo">
+                    <p>
+                      <span className="font-semibold text-foreground">Package:</span> {selectedPackageInfo.name}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-foreground">Price per Guest:</span>{" "}
+                      {typeof selectedPackageInfo.price === "number"
+                        ? `₱${selectedPackageInfo.price.toLocaleString()}`
+                        : selectedPackageInfo.price}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-foreground">Number of Guests:</span>{" "}
+                      {formData.numberOfGuests || "—"}
+                    </p>
+                  </div>
+
+                  {selectedPackageInfo.customItems && selectedPackageInfo.customItems.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="font-semibold text-foreground">Additional Items:</p>
                       <ul className="list-disc list-inside space-y-1 text-foreground/80">
                         {selectedPackageInfo.customItems.map((item: string, i: number) => (
-                          <li key={i}>{item}</li>
+                          <li key={i} className="text-sm">
+                            {item}
+                          </li>
                         ))}
                       </ul>
                     </div>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-accent/30">
+                  {totalPrice !== null && totalPrice > 0 ? (
+                    <div className="bg-accent/10 px-4 py-3 rounded-lg">
+                      <p className="text-sm text-foreground/70 mb-1">Total Booking Price</p>
+                      <p className="text-2xl md:text-3xl font-mochiy text-accent font-bold">
+                        ₱{totalPrice.toLocaleString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-foreground/60 italic">
+                      Price will update once you specify the number of guests.
+                    </p>
                   )}
                 </div>
               </div>
@@ -738,7 +812,11 @@ export default function BookPage() {
                         className="w-full px-4 py-3 md:py-4 border border-border rounded-lg bg-secondary/50 text-foreground font-archivo focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="">
-                          {isLoadingPackages ? "Loading packages..." : packages.length === 0 ? "No packages available" : "Select a package"}
+                          {isLoadingPackages
+                            ? "Loading packages..."
+                            : packages.length === 0
+                              ? "No packages available"
+                              : "Select a package"}
                         </option>
                         {packages.map((pkg: any) => (
                           <option key={pkg._id} value={pkg.name}>
