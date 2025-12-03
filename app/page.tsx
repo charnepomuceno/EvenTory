@@ -37,34 +37,50 @@ function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-15">
-            <Link
-              href="/login"
-              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
+            <a
+              href="#packages"
+              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in cursor-pointer"
               style={{ animationDelay: "0.3s" }}
-            >
-              Menu
-            </Link>
-            <Link
-              href="/login"
-              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
-              style={{ animationDelay: "0.4s" }}
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("packages")?.scrollIntoView({ behavior: "smooth" })
+              }}
             >
               Packages
-            </Link>
-            <Link
-              href="/login"
-              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
+            </a>
+            <a
+              href="#howitworks"
+              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in cursor-pointer"
+              style={{ animationDelay: "0.4s" }}
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("howitworks")?.scrollIntoView({ behavior: "smooth" })
+              }}
+            >
+              How It Works
+            </a>
+            <a
+              href="#testimonials"
+              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in cursor-pointer"
               style={{ animationDelay: "0.5s" }}
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("testimonials")?.scrollIntoView({ behavior: "smooth" })
+              }}
+            >
+              Reviews
+            </a>
+            <a
+              href="#cta"
+              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in cursor-pointer"
+              style={{ animationDelay: "0.6s" }}
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" })
+              }}
             >
               Book Now
-            </Link>
-            <Link
-              href="/login"
-              className="text-foreground hover:text-accent transition-colors text-base font-medium opacity-0 animate-fade-in"
-              style={{ animationDelay: "0.6s" }}
-            >
-              Feedback
-            </Link>
+            </a>
           </nav>
 
           <div className="hidden md:block opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
@@ -266,7 +282,7 @@ function HowItWorks() {
   ]
 
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="howitworks" className="py-16 md:py-24 bg-background">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">
@@ -327,7 +343,7 @@ function Testimonials() {
   ]
 
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="testimonials" className="py-16 md:py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-mochiy text-primary mb-3">What Our Clients Say</h2>
@@ -362,7 +378,7 @@ function Testimonials() {
 
 function CTA() {
   return (
-    <section className="py-20 md:py-28 bg-secondary/30 text-foreground">
+    <section id="cta" className="py-20 md:py-28 bg-secondary/30 text-foreground">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2
           className="text-3xl md:text-4xl font-mochiy mb-6 opacity-0 animate-fade-in text-primary"
