@@ -316,21 +316,21 @@ export default function ManageBookings() {
                       {booking.status === "Pending" ? (
                         <>
                           <button
-                            className="bg-[#95BC66] hover:bg-[#7da655] text-white p-2 rounded-full disabled:opacity-50"
+                            className="bg-[#95BC66] hover:bg-[#7da655] text-white p-2 rounded-full disabled:opacity-50 cursor-pointer"
                             disabled={actionLoadingId === booking.id}
                             onClick={() => handleApprove(booking)}
                           >
                             <CheckCircle size={18} />
                           </button>
                           <button
-                            className="bg-[#C1121F] hover:bg-[#9d0e18] text-white p-2 rounded-full disabled:opacity-50"
+                            className="bg-[#C1121F] hover:bg-[#9d0e18] text-white p-2 rounded-full disabled:opacity-50 cursor-pointer"
                             disabled={actionLoadingId === booking.id}
                             onClick={() => handleDecline(booking)}
                           >
                             <XCircle size={18} />
                           </button>
                           <button
-                            className="bg-amber-100 text-amber-700 p-2 rounded-full"
+                            className="bg-amber-100 text-amber-700 p-2 rounded-full cursor-pointer"
                             onClick={() => handleViewDetails(booking)}
                           >
                             <Eye size={18} />
@@ -338,7 +338,7 @@ export default function ManageBookings() {
                         </>
                       ) : (
                         <button
-                          className="bg-amber-100 text-amber-700 p-2 rounded-full"
+                          className="bg-amber-100 text-amber-700 p-2 rounded-full cursor-pointer"
                           onClick={() => handleViewDetails(booking)}
                         >
                           <Eye size={18} />
