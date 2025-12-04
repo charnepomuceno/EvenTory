@@ -28,6 +28,8 @@ export default function ManageMenuItems() {
   const [editForm, setEditForm] = useState({ name: "", category: "Main Dish", cost: "", price: "", status: "Available" });
   const [editImage, setEditImage] = useState<File | null>(null);
   const [editExistingImageUrl, setEditExistingImageUrl] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchItems = async (search = "") => {
     setLoading(true);
@@ -52,6 +54,15 @@ export default function ManageMenuItems() {
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,7 +220,7 @@ export default function ManageMenuItems() {
             {loading ? (
               <tr><td colSpan={7} className="py-8 text-center">Loading...</td></tr>
             ) : (
-              filteredItems.map((item) => (
+              paginatedItems.map((item) => (
                 <tr key={item._id} className="border-b border-gray-100">
                   <td className="py-4 px-4 font-medium text-gray-900">{item.name}</td>
                   <td className="py-4 px-4">
@@ -242,6 +253,46 @@ export default function ManageMenuItems() {
         {filteredItems.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No items found matching your search.</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {filteredItems.length > 0 && !loading && totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredItems.length)} of {filteredItems.length} items
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                      currentPage === page
+                        ? "bg-red-700 text-white"
+                        : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
