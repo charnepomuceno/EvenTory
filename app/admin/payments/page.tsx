@@ -133,7 +133,7 @@ export default function PaymentManagement() {
     [payments],
   )
   const totalPending = useMemo(
-    () => payments.reduce((sum, p) => sum + (p.status === "Pending" ? p.balance : 0), 0),
+    () => payments.reduce((sum, p) => sum + p.balance, 0),
     [payments],
   )
 

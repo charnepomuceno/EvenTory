@@ -1,14 +1,14 @@
+"use client"
+
 import React from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { Calendar, LogOut, Star, TrendingUp, Package as PackageIcon, Utensils } from "lucide-react"
 import AdminGuard from "./AdminGuard"
 
-export const metadata = {
-  title: "Admin - EvenTory",
-}
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const navItems = [
 
     { label: "Bookings", href: "/admin/booking", icon: Calendar },
@@ -29,16 +29,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
   <nav className="flex-1 p-6 space-y-3 overflow-auto">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 group"
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + "/")
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
+                  isActive
+                    ? "bg-red-600 text-white hover:bg-red-700"
+                    : "text-gray-700 hover:bg-red-50 hover:text-red-600"
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            )
+          })}
         </nav>
 
         <div className="p-6 border-t border-gray-200">
