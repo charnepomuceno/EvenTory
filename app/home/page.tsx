@@ -286,14 +286,14 @@ function CheckAvailability() {
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={handlePrevMonth}
-              className="px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all"
+              className="px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all cursor-pointer"
             >
               ← Prev
             </button>
             <h4 className="text-lg md:text-xl font-mochiy text-primary">{monthName}</h4>
             <button
               onClick={handleNextMonth}
-              className="px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all"
+              className="px-4 py-2 rounded-xl bg-secondary/60 hover:bg-secondary text-foreground font-semibold transition-all cursor-pointer"
             >
               Next →
             </button>
