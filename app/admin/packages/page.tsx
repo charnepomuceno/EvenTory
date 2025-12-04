@@ -250,7 +250,7 @@ export default function PackagesPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="bg-[#669BBC] hover:bg-[#5a87a8] text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2"
+          className="bg-[#669BBC] hover:bg-[#5a87a8] text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2 cursor-pointer"
         >
           + Create New Package
         </button>
@@ -306,14 +306,14 @@ export default function PackagesPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => openEdit(pkg)}
-                    className="border-2 border-red-700 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2"
+                    className="border-2 border-red-700 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Pencil size={18} />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(pkg._id)}
-                    className="bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2"
+                    className="bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Trash2 size={18} />
                     Delete
@@ -410,10 +410,10 @@ export default function PackagesPage() {
             </div>
 
             <div className="mt-4 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 border rounded">
+              <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2 border rounded cursor-pointer">
                 Cancel
               </button>
-              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">
+              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded cursor-pointer">
                 Create
               </button>
             </div>
@@ -507,10 +507,10 @@ export default function PackagesPage() {
             </div>
 
             <div className="mt-4 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowEdit(false)} className="px-4 py-2 border rounded">
+              <button type="button" onClick={() => setShowEdit(false)} className="px-4 py-2 border rounded cursor-pointer">
                 Cancel
               </button>
-              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">
+              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded cursor-pointer">
                 Save
               </button>
             </div>
