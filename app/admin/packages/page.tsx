@@ -53,6 +53,8 @@ export default function PackagesPage() {
     beverage: "",
     description: "",
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   const fetchPackages = async () => {
     setLoading(true)
@@ -70,6 +72,16 @@ export default function PackagesPage() {
   useEffect(() => {
     fetchPackages()
   }, [])
+
+  const filteredPackages = packages.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const totalPages = Math.ceil(filteredPackages.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedPackages = filteredPackages.slice(startIndex, endIndex)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -261,9 +273,7 @@ export default function PackagesPage() {
         {loading ? (
           <div>Loading packages...</div>
         ) : (
-          packages
-            .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
-            .map((pkg) => (
+          paginatedPackages.map((pkg) => (
               <div key={pkg._id} className="bg-white/50 rounded-2xl p-6 shadow-xl border-2 border-gray-100">
                 {/* Header with Title and Status */}
                 <div className="flex items-start justify-between mb-4">
@@ -323,6 +333,52 @@ export default function PackagesPage() {
             ))
         )}
       </div>
+
+      {/* Pagination */}
+      {filteredPackages.length > 0 && !loading && totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1} to {Math.min(endIndex, filteredPackages.length)} of {filteredPackages.length} packages
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                    currentPage === page
+                      ? "bg-red-700 text-white"
+                      : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {filteredPackages.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">No packages found matching your search.</p>
+        </div>
+      )}
 
       {/* Create Package Modal */}
       {showCreate && (
