@@ -193,7 +193,7 @@ export default function ManageMenuItems() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="bg-[#669BBC] hover:bg-[#5a87a8] text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2"
+          className="bg-[#669BBC] hover:bg-[#5a87a8] text-white font-medium px-5 py-3 rounded-lg flex items-center gap-2 cursor-pointer"
         >
           + Add New Item
         </button>
@@ -236,10 +236,10 @@ export default function ManageMenuItems() {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
-                      <button onClick={() => openEdit(item)} className="bg-yellow-50 text-yellow-700 p-2 rounded-full">
+                      <button onClick={() => openEdit(item)} className="bg-yellow-50 text-yellow-700 p-2 rounded-full cursor-pointer">
                         <Pencil size={18} />
                       </button>
-                      <button onClick={() => handleDelete(item._id)} className="bg-red-600 text-white p-2 rounded-full">
+                      <button onClick={() => handleDelete(item._id)} className="bg-red-600 text-white p-2 rounded-full cursor-pointer">
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -335,8 +335,8 @@ export default function ManageMenuItems() {
             </div>
 
             <div className="mt-4 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowAdd(false)} className="px-4 py-2 border rounded">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">Create</button>
+              <button type="button" onClick={() => setShowAdd(false)} className="px-4 py-2 border rounded cursor-pointer">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded cursor-pointer">Create</button>
             </div>
           </form>
         </div>
@@ -382,8 +382,8 @@ export default function ManageMenuItems() {
             </div>
 
             <div className="mt-4 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowEdit(false)} className="px-4 py-2 border rounded">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded">Save</button>
+              <button type="button" onClick={() => setShowEdit(false)} className="px-4 py-2 border rounded cursor-pointer">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-red-700 text-white rounded cursor-pointer">Save</button>
             </div>
           </form>
         </div>

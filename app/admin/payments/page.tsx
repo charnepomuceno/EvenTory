@@ -329,7 +329,7 @@ export default function PaymentManagement() {
                   <button
                     type="button"
                     onClick={() => setEditPayment(null)}
-                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
+                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -337,7 +337,7 @@ export default function PaymentManagement() {
                     type="button"
                     onClick={handleSaveEdit}
                     disabled={savingEdit}
-                    className="px-4 py-2 text-sm rounded-lg bg-red-700 text-white hover:bg-red-800 disabled:opacity-50"
+                    className="px-4 py-2 text-sm rounded-lg bg-red-700 text-white hover:bg-red-800 disabled:opacity-50 cursor-pointer"
                   >
                     {savingEdit ? "Saving..." : "Save"}
                   </button>

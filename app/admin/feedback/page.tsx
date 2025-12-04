@@ -200,14 +200,14 @@ export default function FeedbackPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleHide(feedback.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-orange-600 border border-orange-600 rounded-md hover:bg-orange-50 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-orange-600 border border-orange-600 rounded-md hover:bg-orange-50 transition-colors cursor-pointer"
                   >
                     <EyeOff className="w-4 h-4" />
                     {feedback.status === "Visible" ? "Hide" : "Show"}
                   </button>
                   <button
                     onClick={() => handleDelete(feedback.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-red-800 rounded-md hover:bg-red-700 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-red-800 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
