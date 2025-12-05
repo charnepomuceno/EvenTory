@@ -72,7 +72,6 @@ export default function ManageMenuItems() {
         return;
       }
 
-      // upload image first
       const fd = new FormData();
       fd.append('image', formImage);
       const uploadRes = await fetch('/api/uploads', { method: 'POST', body: fd });
@@ -127,7 +126,6 @@ export default function ManageMenuItems() {
         status: editForm.status,
       }
 
-      // if a new image file selected, upload it first
       if (editImage) {
         const fd = new FormData();
         fd.append('image', editImage);
@@ -266,7 +264,7 @@ export default function ManageMenuItems() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Previous
               </button>
@@ -275,7 +273,7 @@ export default function ManageMenuItems() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium cursor-pointer ${
                       currentPage === page
                         ? "bg-red-700 text-white"
                         : "border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -288,7 +286,7 @@ export default function ManageMenuItems() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Next
               </button>

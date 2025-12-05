@@ -108,7 +108,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData()
-    const interval = setInterval(loadData, 15000) // refresh every 15s
+    const interval = setInterval(loadData, 15000) 
     return () => clearInterval(interval)
   }, [])
 

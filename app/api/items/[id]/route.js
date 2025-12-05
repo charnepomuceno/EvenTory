@@ -1,7 +1,6 @@
 import dbConnect from "@/lib/db"
 import Item from "@/lib/models/admin-item.js"
 
-// GET single item
 export async function GET(request, { params }) {
   try {
     await dbConnect()
@@ -18,7 +17,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT update item
 export async function PUT(request, { params }) {
   try {
     await dbConnect()
@@ -40,7 +38,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE item
 export async function DELETE(request, { params }) {
   try {
     await dbConnect()

@@ -27,9 +27,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
       if (!isAdmin) {
         setUnauthorized(true)
-        // Show message and redirect after a short delay
         setTimeout(() => {
-          // Try to go back to previous page, otherwise go to home
           if (typeof window !== "undefined" && window.history.length > 1) {
             router.back()
           } else {

@@ -1,7 +1,6 @@
 import dbConnect from "@/lib/db"
 import Item from "@/lib/models/admin-item.js"
 
-// GET all items or search
 export async function GET(request) {
   try {
     await dbConnect()
@@ -22,7 +21,6 @@ export async function GET(request) {
   }
 }
 
-// POST create a new item
 export async function POST(request) {
   try {
     await dbConnect()

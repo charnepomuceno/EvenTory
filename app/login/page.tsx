@@ -68,7 +68,6 @@ export default function LoginPage() {
         return
       }
 
-      // Simple client-side auth marker; in a real app this would be a JWT
       localStorage.setItem("authToken", String(data.user.id || ""))
       setLoading(false)
       localStorage.setItem(

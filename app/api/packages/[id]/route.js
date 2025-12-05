@@ -1,7 +1,6 @@
 import dbConnect from "@/lib/db"
 import Package from "@/lib/models/admin-package.js"
 
-// GET single package
 export async function GET(request, { params }) {
   try {
     await dbConnect()
@@ -18,7 +17,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT update package
 export async function PUT(request, { params }) {
   try {
     await dbConnect()
@@ -40,7 +38,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE package
 export async function DELETE(request, { params }) {
   try {
     await dbConnect()

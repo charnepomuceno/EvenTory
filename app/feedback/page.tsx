@@ -17,6 +17,7 @@ export default function FeedbackPage() {
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [personalDetails, setPersonalDetails] = useState({
     fullName: "",
     phone: "",
@@ -125,7 +126,6 @@ export default function FeedbackPage() {
         return
       }
 
-      // Optimistically add new feedback to recent list
       setRecentFeedback((prev) => [
         {
           _id: json._id || Math.random().toString(),
@@ -165,7 +165,7 @@ export default function FeedbackPage() {
     <main className="min-h-screen bg-background">
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
+          (isScrolled || isOpen) ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
         }`}
       >
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -220,18 +220,52 @@ export default function FeedbackPage() {
               </Link>
             </nav>
 
-            <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+            <div className="flex items-center gap-4">
+              <Link href="/profile" className="opacity-0 animate-fade-in hidden md:block" style={{ animationDelay: "0.7s" }}>
+                <button
+                  className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
+                    isActive("/profile")
+                      ? "bg-accent text-primary-foreground border border-accent"
+                      : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
+                  }`}
+                >
+                  Profile
+                </button>
+              </Link>
+
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
-                  isActive("/profile")
-                    ? "bg-accent text-primary-foreground border border-accent"
-                    : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
-                }`}
-              >
-                Profile
-              </button>
-            </Link>
+              onClick={() => setIsOpen(!isOpen)}
+              className="md:hidden p-2 rounded-md text-foreground hover:bg-secondary"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            </div>
           </div>
+
+          {isOpen && (
+            <nav className="md:hidden pb-4 space-y-2 bg-background border-t border-border">
+              <Link href="/menu" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Menu
+              </Link>
+              <Link href="/packages" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Packages
+              </Link>
+              <Link href="/book" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Book Now
+              </Link>
+              <Link href="/feedback" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Feedback
+              </Link>
+              <Link href="/profile" className="block">
+                <button className="w-full mt-2 px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-sm font-medium cursor-pointer">
+                  Profile
+                </button>
+              </Link>
+            </nav>
+          )}
         </div>
       </header>
 
