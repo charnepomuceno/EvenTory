@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 import { CalendarDays, Users, ChefHat, CheckCircle } from "lucide-react"
 
 function Header() {
-  const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -83,46 +82,15 @@ function Header() {
             </a>
           </nav>
 
-          <div className="hidden md:block opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+          <div className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
             <Link href="/login">
               <button className="px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-base font-medium cursor-pointer">
                 Login
               </button>
             </Link>
           </div>
-
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-md text-foreground hover:bg-secondary"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
         </div>
-
-        {isOpen && (
-          <nav className="md:hidden pb-4 space-y-2">
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
-              Menu
-            </Link>
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
-              Packages
-            </Link>
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
-              Book Now
-            </Link>
-            <Link href="/login" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
-              Feedback
-            </Link>
-            <Link href="/login" className="block">
-              <button className="w-full mt-2 px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-sm font-medium">
-                Login
-              </button>
-            </Link>
-          </nav>
-        )}
+        
       </div>
     </header>
   )

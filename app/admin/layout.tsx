@@ -60,7 +60,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <main className="flex-1 overflow-auto relative">
-        {/* background overlay */}
         <div
           className="absolute inset-0 pointer-events-none opacity-30"
           style={{

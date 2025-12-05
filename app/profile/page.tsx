@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
@@ -57,7 +58,7 @@ export default function ProfilePage() {
       return
     }
 
-    setAuthChecked(true)
+     setAuthChecked(true)
   }, [router])
 
   useEffect(() => {
@@ -190,6 +191,14 @@ export default function ProfilePage() {
     return "✓ Completed"
   }
 
+  const formatEventType = (text?: string | null) => {
+    if (!text) return ""
+    return String(text)
+      .split(" ")
+      .map((w) => (w.length ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+      .join(" ")
+  }
+
   if (!authChecked) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background">
@@ -202,7 +211,7 @@ export default function ProfilePage() {
     <main className="min-h-screen bg-background">
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
+          (isScrolled || isOpen) ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
         }`}
       >
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -255,18 +264,53 @@ export default function ProfilePage() {
                 Feedback
               </Link>
             </nav>
-            <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+
+            <div className="flex items-center gap-4">
+              <Link href="/profile" className="opacity-0 animate-fade-in hidden md:block" style={{ animationDelay: "0.7s" }}>
+                <button
+                  className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
+                    isActive("/profile")
+                      ? "bg-accent text-primary-foreground border border-accent"
+                      : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
+                  }`}
+                >
+                  Profile
+                </button>
+              </Link>
+
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
-                  isActive("/profile")
-                    ? "bg-accent text-primary-foreground border border-accent"
-                    : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
-                }`}
-              >
-                Profile
-              </button>
-            </Link>
+              onClick={() => setIsOpen(!isOpen)}
+              className="md:hidden p-2 rounded-md text-foreground hover:bg-secondary"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            </div>
           </div>
+
+          {isOpen && (
+            <nav className="md:hidden pb-4 space-y-2 bg-background border-t border-border">
+              <Link href="/menu" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Menu
+              </Link>
+              <Link href="/packages" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Packages
+              </Link>
+              <Link href="/book" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Book Now
+              </Link>
+              <Link href="/feedback" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Feedback
+              </Link>
+              <Link href="/profile" className="block">
+                <button className="w-full mt-2 px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-sm font-medium cursor-pointer">
+                  Profile
+                </button>
+              </Link>
+            </nav>
+          )}
         </div>
       </header>
       <section className="relative w-full pt-20 md:pt-24 pb-2 md:pb-4 overflow-hidden bg-background">
@@ -336,11 +380,11 @@ export default function ProfilePage() {
             {loadingBookings ? (
               <div className="py-12 text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent mx-auto mb-4"></div>
-                <p className="text-foreground/60 font-archivo">Loading bookings...</p>
+                <p className="text-foreground/60 font-archivo">Loading Bookings...</p>
               </div>
             ) : bookings.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-foreground/60 font-archivo mb-4">No bookings found</p>
+                <p className="text-foreground/60 font-archivo mb-4">No Bookings Found</p>
                 <Link href="/book">
                   <button className="px-6 py-2 bg-accent text-primary-foreground rounded-lg hover:bg-accent/90 transition-colors font-archivo cursor-pointer">
                     Make a Booking
@@ -357,7 +401,7 @@ export default function ProfilePage() {
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <h3 className="text-xl md:text-2xl font-mochiy text-primary">{booking.event_type}</h3>
+                          <h3 className="text-xl md:text-2xl font-mochiy text-primary">{formatEventType(booking.event_type)}</h3>
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-medium font-archivo ${getStatusColor(booking.status)}`}
                           >
@@ -373,7 +417,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
                             <Users className="w-4 h-4" />
-                            <span>{booking.number_of_guests} guests</span>
+                            <span>{booking.number_of_guests} Guests</span>
                           </div>
                           <div className="flex items-center gap-2 text-foreground/70 font-archivo text-sm">
                             <MapPin className="w-4 h-4" />
@@ -399,7 +443,7 @@ export default function ProfilePage() {
                         <div className="bg-secondary/30 rounded-lg p-4 mb-4 space-y-3">
                           <div>
                             <p className="text-foreground/60 text-xs font-archivo mb-1">Event Type</p>
-                            <p className="text-foreground font-archivo text-sm">{booking.event_type}</p>
+                            <p className="text-foreground font-archivo text-sm">{formatEventType(booking.event_type)}</p>
                           </div>
                           <div>
                             <p className="text-foreground/60 text-xs font-archivo mb-1">Number of Guests</p>

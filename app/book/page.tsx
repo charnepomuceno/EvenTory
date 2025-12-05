@@ -13,6 +13,7 @@ export default function BookPage() {
   const router = useRouter()
   const [authChecked, setAuthChecked] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -55,21 +56,12 @@ export default function BookPage() {
 
   const calculateTotalPrice = (pkg: any, guests: string): number | null => {
     if (!pkg || !guests) return null
-
     const guestCount = Number.parseInt(guests, 10)
     if (isNaN(guestCount) || guestCount < 30) return null
-
-    // Extract numeric price from package price
     const pricePerGuest = extractNumericPrice(pkg.price)
     if (pricePerGuest === 0) return null
-
-    // Calculate base price (price per guest × number of guests)
     const total = pricePerGuest * guestCount
-
-    // Add custom items if they exist
     if (pkg.customItems && Array.isArray(pkg.customItems)) {
-      // For now, custom items are shown but not priced separately in the calculation
-      // This can be extended if custom items have individual prices
     }
 
     return total
@@ -96,6 +88,8 @@ export default function BookPage() {
     setAuthChecked(true)
   }, [router])
 
+  const isActive = (href: string) => pathname === href
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
@@ -119,7 +113,6 @@ export default function BookPage() {
       try {
         const parsed = JSON.parse(packageData)
         initialSelectedPackage = parsed
-        // Set the preferred package name immediately
         setFormData((prev) => ({
           ...prev,
           preferredPackage: parsed.name,
@@ -139,35 +132,29 @@ export default function BookPage() {
           const activePackages = data.data.filter((pkg: any) => pkg.status === "Active")
           setPackages(activePackages)
 
-          // Sync selected package info with admin-defined packages when possible
           if (initialSelectedPackage) {
             const matched = activePackages.find((pkg: any) => pkg.name === initialSelectedPackage.name)
             if (matched) {
-              // Use the matched package from API, but preserve custom price if customized
               setSelectedPackageInfo({
                 ...matched,
                 price: initialSelectedPackage.isCustomized ? initialSelectedPackage.price : matched.price,
                 customItems: initialSelectedPackage.customItems || matched.inclusions,
               })
-              // Ensure the formData matches the found package name
               setFormData((prev) => ({
                 ...prev,
                 preferredPackage: matched.name,
               }))
             } else {
-              // If no match found, clear the selection so user can choose
               setSelectedPackageInfo(null)
               setFormData((prev) => ({
                 ...prev,
                 preferredPackage: "",
               }))
-              // Clear sessionStorage if package doesn't exist
               sessionStorage.removeItem("selectedPackage")
             }
           }
         } else {
           console.error("Failed to load packages:", data.error)
-          // If API fails, clear the selection
           if (initialSelectedPackage) {
             setSelectedPackageInfo(initialSelectedPackage)
           } else {
@@ -179,7 +166,6 @@ export default function BookPage() {
         }
       } catch (err) {
         console.error("Error loading packages:", err)
-        // If error, clear the selection
         if (initialSelectedPackage) {
           setSelectedPackageInfo(initialSelectedPackage)
         } else {
@@ -201,7 +187,6 @@ export default function BookPage() {
 
         const keys = new Set<string>()
         ;(json.bookings || []).forEach((b: any) => {
-          // Skip cancelled bookings
           if (b.status === "cancelled") return
           if (!b.event_date) return
           const d = new Date(b.event_date)
@@ -222,7 +207,7 @@ export default function BookPage() {
     fetchBookedDates()
 
     return () => window.removeEventListener("scroll", handleScroll)
-  }, []) // Only run once on mount
+  }, [])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -432,9 +417,6 @@ export default function BookPage() {
       return () => clearTimeout(timer)
     }
   }, [showSuccessPopup, router])
-
-  const isActive = (href: string) => pathname === href
-
   if (!authChecked) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background">
@@ -446,9 +428,9 @@ export default function BookPage() {
   return (
     <main className="min-h-screen bg-background">
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
-        }`}
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            (isScrolled || isOpen) ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
+          }`}
       >
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
           <div className="flex items-center justify-between h-16 md:h-20">
@@ -502,18 +484,52 @@ export default function BookPage() {
               </Link>
             </nav>
 
-            <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+            <div className="flex items-center gap-4">
+              <Link href="/profile" className="opacity-0 animate-fade-in hidden md:block" style={{ animationDelay: "0.7s" }}>
+                <button
+                  className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
+                    isActive("/profile")
+                      ? "bg-accent text-primary-foreground border border-accent"
+                      : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
+                  }`}
+                >
+                  Profile
+                </button>
+              </Link>
+
               <button
-                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
-                  isActive("/profile")
-                    ? "bg-accent text-primary-foreground border border-accent"
-                    : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
-                }`}
-              >
-                Profile
-              </button>
-            </Link>
+              onClick={() => setIsOpen(!isOpen)}
+              className="md:hidden p-2 rounded-md text-foreground hover:bg-secondary"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            </div>
           </div>
+
+            {isOpen && (
+            <nav className="md:hidden pb-4 space-y-2 bg-background border-t border-border">
+              <Link href="/menu" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Menu
+              </Link>
+              <Link href="/packages" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Packages
+              </Link>
+              <Link href="/book" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Book Now
+              </Link>
+              <Link href="/feedback" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
+                Feedback
+              </Link>
+              <Link href="/profile" className="block">
+                <button className="w-full mt-2 px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-sm font-medium cursor-pointer">
+                  Profile
+                </button>
+              </Link>
+            </nav>
+          )}
         </div>
       </header>
 
@@ -811,13 +827,10 @@ export default function BookPage() {
                           handleInputChange(e)
                           const selected = packages.find((pkg: any) => pkg.name === newValue) || null
                           setSelectedPackageInfo(selected)
-                          // Clear selected package info if user selects empty option
                           if (!newValue) {
                             setSelectedPackageInfo(null)
-                            // Clear sessionStorage when user manually changes selection
                             sessionStorage.removeItem("selectedPackage")
                           } else if (selected) {
-                            // Update sessionStorage with new selection
                             sessionStorage.setItem(
                               "selectedPackage",
                               JSON.stringify({

@@ -4,7 +4,6 @@ import User from "@/lib/models/User"
 import { Booking } from "@/lib/models/admin-booking"
 import { Payment } from "@/lib/models/admin-payment"
 
-// Helper to shape booking data for the frontend (profile & admin)
 function serializeBooking(booking) {
   return {
     id: booking._id.toString(),
@@ -82,7 +81,6 @@ export async function POST(request) {
 
     await dbConnect()
 
-    // Check if user exists in MongoDB
     const user = await User.findById(userId)
     if (!user) {
       return NextResponse.json(
@@ -93,7 +91,6 @@ export async function POST(request) {
 
     const guests = Number.parseInt(numberOfGuests, 10)
 
-    // Safely parse price from either a number or a string like "₱1,000 per head"
     let numericPrice = 0
     if (typeof price === "number") {
       numericPrice = price
@@ -121,13 +118,11 @@ export async function POST(request) {
 
     const booking = await Booking.create(bookingData)
 
-    // Create initial payment record linked to this booking
     try {
-      // Validate payment method - must be one of the enum values
       const validPaymentMethods = ["credit-card", "debit-card", "bank-transfer", "gcash"]
       const selectedPaymentMethod = paymentMethod && validPaymentMethods.includes(paymentMethod) 
         ? paymentMethod 
-        : "gcash" // Default to gcash if not provided or invalid
+        : "gcash"
 
       await Payment.create({
         bookingId: booking._id,
@@ -142,7 +137,6 @@ export async function POST(request) {
       })
     } catch (paymentError) {
       console.error("Failed to create payment record for booking:", paymentError)
-      // Do not fail the booking if payment document fails; admin can repair manually
     }
 
     return NextResponse.json({ booking: serializeBooking(booking) }, { status: 201 })

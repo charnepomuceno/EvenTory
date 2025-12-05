@@ -33,7 +33,6 @@ export async function POST(request) {
     const adminEmails = ["rabad@gbox.adnu.edu.ph", "charnepomuceno@gbox.adnu.edu.ph"]
     const isAdmin = adminEmails.includes((user.email || "").toLowerCase()) || Boolean(user.isAdmin)
 
-    // Ensure DB flag is set for known admin accounts
     if (isAdmin && !user.isAdmin) {
       user.isAdmin = true
       await user.save()

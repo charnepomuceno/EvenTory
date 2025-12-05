@@ -1,4 +1,3 @@
-// Use Node runtime for GridFS + mongoose on Vercel
 export const runtime = 'nodejs'
 
 import { dbConnect, mongoose } from "../../../lib/db.js";

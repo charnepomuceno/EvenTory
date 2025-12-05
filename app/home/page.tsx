@@ -21,7 +21,7 @@ function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
+        (isScrolled || isOpen) ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
       }`}
     >
       <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -88,7 +88,7 @@ function Header() {
         </div>
 
         {isOpen && (
-          <nav className="md:hidden pb-4 space-y-2">
+          <nav className="md:hidden pb-4 space-y-2 bg-background border-t border-border">
             <Link href="/menu" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
               Menu
             </Link>
@@ -101,9 +101,9 @@ function Header() {
             <Link href="/feedback" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
               Feedback
             </Link>
-            <Link href="/login" className="block">
+            <Link href="/profile" className="block">
               <button className="w-full mt-2 px-4 py-2 text-accent border border-accent rounded-full hover:bg-accent hover:text-primary-foreground transition-colors text-sm font-medium">
-                Login
+                Profile
               </button>
             </Link>
           </nav>
@@ -179,7 +179,6 @@ function CheckAvailability() {
         const bookedKeys = new Set<string>()
 
         ;(json.bookings || []).forEach((b: any) => {
-          // Skip cancelled bookings
           if (b.status === "cancelled") return
           if (!b.event_date) return
           const d = new Date(b.event_date)
@@ -188,9 +187,6 @@ function CheckAvailability() {
           const m = `${d.getMonth() + 1}`.padStart(2, "0")
           const day = `${d.getDate()}`.padStart(2, "0")
           const key = `${y}-${m}-${day}`
-
-          // Mark all non-cancelled bookings (pending, confirmed, completed) as booked
-          // since those dates are already taken by users
           bookedKeys.add(key)
         })
 
@@ -213,13 +209,12 @@ function CheckAvailability() {
     today.setHours(0, 0, 0, 0)
     const checkDate = new Date(year, month, day)
     checkDate.setHours(0, 0, 0, 0)
-    // Return true if the date is today or in the past (including today)
     return checkDate <= today
   }
 
   const getDateStatus = (day: number): "available" | "booked" | "past" => {
     if (isDateInPastOrToday(currentDate.getFullYear(), currentDate.getMonth(), day)) {
-      return "past" // Past dates are unavailable
+      return "past"
     }
 
     const y = currentDate.getFullYear()

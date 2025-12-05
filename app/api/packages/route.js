@@ -1,7 +1,6 @@
 import dbConnect from "@/lib/db"
 import Package from "@/lib/models/admin-package.js"
 
-// GET all packages
 export async function GET(request) {
   try {
     await dbConnect()
@@ -12,7 +11,6 @@ export async function GET(request) {
   }
 }
 
-// POST create a new package
 export async function POST(request) {
   try {
     await dbConnect()

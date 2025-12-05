@@ -3,7 +3,6 @@ import dbConnect from "@/lib/db"
 import { Booking } from "@/lib/models/admin-booking"
 import { Payment } from "@/lib/models/admin-payment"
 
-// Keep in sync with serializeBooking in app/api/bookings/route.js
 function serializeBooking(booking) {
   return {
     id: booking._id.toString(),
@@ -39,7 +38,6 @@ export async function PATCH(request, { params }) {
 
     const updateData = {}
     if (status) {
-      // Map frontend status to stored status (same values currently)
       updateData.status = status
     }
     if (price !== undefined) updateData.price = Number(price)
@@ -51,7 +49,6 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 })
     }
 
-    // When a booking gets confirmed ensure payment record exists/synced
     if (status === "confirmed" && booking) {
       try {
         const total = booking.price ?? booking.amount ?? 0

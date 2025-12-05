@@ -33,10 +33,10 @@ function Header() {
 
   const isActive = (href: string) => pathname === href
 
-  return (
+    return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
+        (isScrolled || isOpen) ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
       }`}
     >
       <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -91,19 +91,20 @@ function Header() {
             </Link>
           </nav>
 
-          <Link href="/profile" className="opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
-            <button
-              className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
-                isActive("/profile")
-                  ? "bg-accent text-primary-foreground border border-accent"
-                  : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
-              }`}
-            >
-              Profile
-            </button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/profile" className="opacity-0 animate-fade-in hidden md:block" style={{ animationDelay: "0.7s" }}>
+              <button
+                className={`px-4 py-2 rounded-full transition-colors text-base font-medium cursor-pointer ${
+                  isActive("/profile")
+                    ? "bg-accent text-primary-foreground border border-accent"
+                    : "text-foreground border border-foreground hover:bg-accent hover:text-primary-foreground"
+                }`}
+              >
+                Profile
+              </button>
+            </Link>
 
-          <button
+            <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden p-2 rounded-md text-foreground hover:bg-secondary"
             aria-label="Toggle menu"
@@ -112,10 +113,11 @@ function Header() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
+          </div>
         </div>
 
-        {isOpen && (
-          <nav className="md:hidden pb-4 space-y-2">
+          {isOpen && (
+          <nav className="md:hidden pb-4 space-y-2 bg-background border-t border-border">
             <Link href="/menu" className="block px-4 py-2 text-foreground hover:bg-secondary rounded-md text-sm">
               Menu
             </Link>
@@ -327,7 +329,7 @@ export default function MenuPage() {
             ))}
           </div>
 
-          {/* Menu Items Grid - updated to 4 columns on desktop */}
+          {/* Menu Items Grid */}
           <div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-16 md:mb-24 opacity-0 animate-fade-in"
             style={{ animationDelay: "0.6s" }}
