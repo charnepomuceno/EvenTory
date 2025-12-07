@@ -24,6 +24,8 @@ export default function PaymentManagement() {
   const [editTotal, setEditTotal] = useState<string>("")
   const [editPaid, setEditPaid] = useState<string>("")
   const [savingEdit, setSavingEdit] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -62,6 +64,17 @@ export default function PaymentManagement() {
     setEditPaid(payment.paidAmount.toString())
   }
 
+  const handlePaidAmountChange = (value: string) => {
+    const paid = Number(value) || 0
+    const total = Number(editTotal) || 0
+    // Ensure paid amount doesn't exceed total amount
+    if (paid > total) {
+      setEditPaid(total.toString())
+    } else {
+      setEditPaid(value)
+    }
+  }
+
   const computedNumbers = () => {
     const total = Number(editTotal) || 0
     const paid = Number(editPaid) || 0
@@ -76,6 +89,12 @@ export default function PaymentManagement() {
   const handleSaveEdit = async () => {
     if (!editPayment) return
     const { total, paid, balance, status } = computedNumbers()
+
+    // Validate that paid amount doesn't exceed total amount
+    if (paid > total) {
+      alert("Paid amount cannot exceed total amount")
+      return
+    }
 
     try {
       setSavingEdit(true)
@@ -127,6 +146,15 @@ export default function PaymentManagement() {
       ),
     [payments, searchQuery],
   )
+
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedPayments = filteredPayments.slice(startIndex, endIndex)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
 
   const totalRevenue = useMemo(
     () => payments.reduce((sum, p) => sum + p.paidAmount, 0),
@@ -219,7 +247,7 @@ export default function PaymentManagement() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPayments.map((payment) => (
+                    {paginatedPayments.map((payment) => (
                       <tr key={payment.id} className="border-b border-gray-100">
                         <td className="py-4 px-4 text-red-900 font-semibold">{payment.id}</td>
                         <td className="py-4 px-4 text-gray-900">{payment.customer}</td>
@@ -275,6 +303,46 @@ export default function PaymentManagement() {
                     <p className="text-gray-500 text-lg">No payments found matching your search.</p>
                   </div>
                 )}
+
+                {/* Pagination */}
+                {filteredPayments.length > 0 && !loading && totalPages > 1 && (
+                  <div className="mt-6 flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      Showing {startIndex + 1} to {Math.min(endIndex, filteredPayments.length)} of {filteredPayments.length} payments
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                              currentPage === page
+                                ? "bg-red-700 text-white"
+                                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -303,10 +371,14 @@ export default function PaymentManagement() {
                     <input
                       type="number"
                       min={0}
+                      max={Number(editTotal) || 0}
                       value={editPaid}
-                      onChange={(e) => setEditPaid(e.target.value)}
+                      onChange={(e) => handlePaidAmountChange(e.target.value)}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
+                    {Number(editPaid) > Number(editTotal) && (
+                      <p className="text-xs text-red-600 mt-1">Paid amount cannot exceed total amount</p>
+                    )}
                   </div>
                   <div className="text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
                     {(() => {
