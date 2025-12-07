@@ -26,6 +26,8 @@ export default function ManageBookings() {
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null)
   const [detailsActionLoading, setDetailsActionLoading] = useState<"pending" | "complete" | "delete" | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -209,6 +211,15 @@ export default function ManageBookings() {
       booking.eventType.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedBookings = filteredBookings.slice(startIndex, endIndex)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Pending":
@@ -270,7 +281,7 @@ export default function ManageBookings() {
               </tr>
             </thead>
             <tbody>
-              {filteredBookings.map((booking) => (
+              {paginatedBookings.map((booking) => (
                 <tr key={booking.id} className="border-b border-gray-200">
                   <td className="py-6 px-4">
                     <p className="font-semibold text-gray-900">{booking.customer}</p>
@@ -355,6 +366,46 @@ export default function ManageBookings() {
         {!loading && filteredBookings.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No bookings found matching your search.</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {filteredBookings.length > 0 && !loading && totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredBookings.length)} of {filteredBookings.length} bookings
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                      currentPage === page
+                        ? "bg-red-700 text-white"
+                        : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
